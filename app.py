@@ -111,6 +111,8 @@ def home():
         else:
             all_well += 1
             flash(f"all_well = {all_well},  SpatialFeatureChoice = {SpatialFeatureChoice}")
+        return render_template('home.html', show_drop_down=show_drop_down, url_choice=url_choice,
+                               url_list=url_list, spatial_var=spatial_var)
     else:
         # If all the API's were called successfully, show the DropDown
         if all_well == 5:
