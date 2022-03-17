@@ -25,7 +25,9 @@ app.config['SECRET_KEY'] = os.urandom(24)
 @app.route('/', methods=['GET', 'POST'])
 def home():
     global show_drop_down, all_well, url_choice, url_list, spatial_var, username, password, full_url, grant_type
-    global API_call_dict, layer_dict
+    global API_call_dict, layer_dict, SpatialFeatureChoice
+    global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
+    global df_MapServiceIntersections
     if request.method == 'POST' and not show_drop_down:  # Pressed the submit button with username and pw
         # The all_well variable is zero if no APIs were returned successfully yet
         all_well = 0
@@ -41,8 +43,6 @@ def home():
         url_choice = full_url
 
         if username != "" and password != "" :
-            # flash(f"Username: {username}")
-            # flash(f"Password: {password}")
             # Test the URL that was selected to see if it is active
             if URL_exists(full_url):
                 url_ok = True
@@ -101,7 +101,6 @@ def home():
     elif request.method == 'POST' and show_drop_down: # Pressed the submit button with spatial features selected
         SpatialFeatureChoice = request.form['inputGroupSelect01']
 
-        print(SpatialFeatureChoice)
         # Call the MapServiceIntersectionCatalogue
         df_MapServiceIntersections = pd.DataFrame(MapServiceIntersectionCatalogue(username, password, grant_type,
                                                                                   full_url, API_call_dict, layer_dict,
@@ -110,6 +109,7 @@ def home():
             flash("Something went wrong with the MapServiceIntersectionsCatalogue API call.")
         else:
             all_well += 1
+
             flash(f"all_well = {all_well},  SpatialFeatureChoice = {SpatialFeatureChoice}")
         return render_template('home.html', show_drop_down=show_drop_down, url_choice=url_choice,
                                url_list=url_list, spatial_var=spatial_var)
