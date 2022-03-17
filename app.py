@@ -25,9 +25,10 @@ app.config['SECRET_KEY'] = os.urandom(24)
 @app.route('/', methods=['GET', 'POST'])
 def home():
     global show_drop_down, all_well, url_choice, url_list, spatial_var, username, password, full_url, grant_type
-    global API_call_dict, layer_dict, SpatialFeatureChoice
+    global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
-    global df_MapServiceIntersections
+    global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2
+
     if request.method == 'POST' and not show_drop_down:  # Pressed the submit button with username and pw
         # The all_well variable is zero if no APIs were returned successfully yet
         all_well = 0
@@ -109,7 +110,41 @@ def home():
             flash("Something went wrong with the MapServiceIntersectionsCatalogue API call.")
         else:
             all_well += 1
-
+            # Change the FeatureClassName column to "category" type
+            df_MapServiceIntersections['FeatureClassName'].astype("category")
+            # See how many 'no intersects' are there
+            no_intersects = df_MapServiceIntersections[df_MapServiceIntersections['FeatureClassName'] == 'No Intersect'].count()[0]
+            # Out of...
+            total_datapoints = len(df_MapServiceIntersections.index)
+            intersecting = total_datapoints - no_intersects
+            # Create a small dataframe (this if for plotly)
+            data = {'NoIntersects': no_intersects, 'Intersecting': intersecting}
+            df_Intersects = pd.DataFrame(data, index=[0])  # the `index` argument is important
+            df_Intersects2 = df_Intersects.T
+            df_Intersects2['Projects'] = df_Intersects2[0]
+            del df_Intersects2[0]
+            df_Intersects2['Intersects'] = df_Intersects2.index
+            # Create dictionary with spatial features as key and projects in that feature with their % intersect as values
+            # Create a list containing the unique Spatial entities available in the dataset. This will enable an iteration through them later
+            list_of_features = list(df_MapServiceIntersections['FeatureClassName'].unique())
+            # Remove 'no intersect' because they have no spatial property and the overwhelm ito numbers in many datasets
+            list_of_features.remove('No Intersect')
+            # This variable stores how many of the chosen feature there is
+            # *******************************************************************************************************
+            # This variable gets created to understand how many features will be discplayed
+            chosen_feature_qty = len(list_of_features)
+            # Initialise the master dictionary
+            feature_intersect_dict = {}
+            # Create a master dictionary with each spatial feature as a key
+            # Each key (e.g. ward) contains another dictionary with project number as key and percentage intersect as value
+            for feature in list_of_features:
+                sub_frame = df_MapServiceIntersections[df_MapServiceIntersections["FeatureClassName"] == feature]
+                project_dict = {}
+                for row in sub_frame.itertuples():
+                    project_dict[row.ProjectId] = row.PercentageIntersect
+                feature_intersect_dict[feature] = project_dict
+            # Now this dictionary can be used to query spatial feature to get to the projects and their intersects.
+            print(feature_intersect_dict['Ward 100'])
             flash(f"all_well = {all_well},  SpatialFeatureChoice = {SpatialFeatureChoice}")
         return render_template('home.html', show_drop_down=show_drop_down, url_choice=url_choice,
                                url_list=url_list, spatial_var=spatial_var)
