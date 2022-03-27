@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, url_for, redirect, flash, ses
 import os
 import pandas as pd
 from Utilities.url_exists import URL_exists
-# from CP3_API_calls.CP3_API_scaffolding import get_token
 from CP3_API_calls.Create_API_Variables import create_vars
 from CP3_API_calls.BaselineCatalogue import baseline_catalogue
 from CP3_API_calls.ProjectCatalogue import ProjectCatalogue
@@ -10,6 +9,7 @@ from CP3_API_calls.CapexDemandCatalogue import CapexDemandCatalogue
 from CP3_API_calls.MapServiceLayersCatalogue import MapServiceLayersCatalogue
 from CP3_API_calls.MapServiceIntersectionCatalogue import MapServiceIntersectionCatalogue
 from Variables.available_urls import url_list
+from Utilities.create_reports import create_worddoc
 
 # global variables
 show_drop_down = False
@@ -19,6 +19,7 @@ spatial_var = []
 
 app = Flask(__name__)  # to make the app run without any
 app.config['SECRET_KEY'] = os.urandom(24)
+app.config['DOWNLOAD_FOLDER'] = "/DOWNLOAD_FOLDER"
 
 
 # This route is the "home" route that redirects immediately to "home_in.html"
@@ -43,7 +44,7 @@ def home():
         # Now assign a value to 'url_choice' based on the url that was chosen
         url_choice = full_url
 
-        if username != "" and password != "" :
+        if username != "" and password != "":
             # Test the URL that was selected to see if it is active
             if URL_exists(full_url):
                 url_ok = True
@@ -108,6 +109,8 @@ def home():
                                                                                   SpatialFeatureChoice))
         if df_MapServiceIntersections.empty:
             flash("Something went wrong with the MapServiceIntersectionsCatalogue API call.")
+            return render_template('home.html', show_drop_down=show_drop_down, url_choice=url_choice,
+                                   url_list=url_list, spatial_var=spatial_var)
         else:
             all_well += 1
             # Change the FeatureClassName column to "category" type
@@ -144,10 +147,12 @@ def home():
                     project_dict[row.ProjectId] = row.PercentageIntersect
                 feature_intersect_dict[feature] = project_dict
             # Now this dictionary can be used to query spatial feature to get to the projects and their intersects.
-            print(feature_intersect_dict['Ward 100'])
-            flash(f"all_well = {all_well},  SpatialFeatureChoice = {SpatialFeatureChoice}")
-        return render_template('home.html', show_drop_down=show_drop_down, url_choice=url_choice,
-                               url_list=url_list, spatial_var=spatial_var)
+            #print(feature_intersect_dict['Ward 100'])
+            # Now create the spatial feature report
+            path = create_worddoc(username="Bernard", full_url=full_url, baseline_dict=baseline_cat_dict,
+                                  project_cat=df_ProjectCatalogue)
+            return send_file(path, as_attachment=True)
+
     else:
         # If all the API's were called successfully, show the DropDown
         if all_well == 5:

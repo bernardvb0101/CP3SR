@@ -23,8 +23,8 @@ def ProjectCatalogue(username, password, grant_type, full_url, API_call_dict):
     # Pass the JSON into a pandas dataframe
     """
     Creates a dataframe that looks like this:
-    ProjectId	Name	Description	ParentId	ParentName	ProjectStatus	UnitName	DepartmentName
-0	712974517	Tshwane Leadership & Management Academy: Carports	Carports	712973924	(712953B) Renovation of Facility	Active	Group Human Capital Management	Tshwane Leadership and Management Academ
+    ProjectId	Name	                                            Description	ParentId	ParentName	                        ProjectStatus	UnitName	                    DepartmentName
+0	712974517	Tshwane Leadership & Management Academy: Carports	Carports	712973924	(712953B) Renovation of Facility	Active	        Group Human Capital Management	Tshwane Leadership and Management Academ
     Etc......
     """
     # The dataframe gets create where the call is made to this function
