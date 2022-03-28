@@ -8,14 +8,16 @@ from CP3_API_calls.ProjectCatalogue import ProjectCatalogue
 from CP3_API_calls.CapexDemandCatalogue import CapexDemandCatalogue
 from CP3_API_calls.MapServiceLayersCatalogue import MapServiceLayersCatalogue
 from CP3_API_calls.MapServiceIntersectionCatalogue import MapServiceIntersectionCatalogue
-from Variables.available_urls import url_list
+from Variables.available_urls import url_list, entityname_list
 from Utilities.create_reports import create_worddoc
 
 # global variables
 show_drop_down = False
 all_well = 0
 url_choice = url_list[0]  # Make the 1st one in the list the default
+entity_choice = entityname_list[0]
 spatial_var = []
+sys_username = "Bernard"
 
 app = Flask(__name__)  # to make the app run without any
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -26,9 +28,9 @@ app.config['DOWNLOAD_FOLDER'] = "/DOWNLOAD_FOLDER"
 @app.route('/', methods=['GET', 'POST'])
 def home():
     global show_drop_down, all_well, url_choice, url_list, spatial_var, username, password, full_url, grant_type
-    global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var
+    global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var, entityname_list, entity_choice
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
-    global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2
+    global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2, sys_username
 
     if request.method == 'POST' and not show_drop_down:  # Pressed the submit button with username and pw
         # The all_well variable is zero if no APIs were returned successfully yet
@@ -38,11 +40,16 @@ def home():
         # Get the crednetials for the API call from the user
         username = request.form.get('username')
         password = request.form.get('password')
-        full_url = request.form['flexRadioDefault']
+        # This part of the credentials for the API call (to my understanding) is default allways "password"
         grant_type = "password"
-
+        # Read the url chosen from the radio button choice that was made (it defaults on the 1st one)
+        full_url = request.form['flexRadioDefault']
         # Now assign a value to 'url_choice' based on the url that was chosen
         url_choice = full_url
+        # Populate the entity name for use in the report
+        for entityname in entityname_list:
+            if url_choice.split(sep=".", maxsplit=10)[1] in entityname:
+                entity_choice = entityname
 
         if username != "" and password != "":
             # Test the URL that was selected to see if it is active
@@ -148,9 +155,15 @@ def home():
                 feature_intersect_dict[feature] = project_dict
             # Now this dictionary can be used to query spatial feature to get to the projects and their intersects.
             #print(feature_intersect_dict['Ward 100'])
+            # Wrap all the loose variables in a dictionary for use in the report
+            var_dict = {}
+            var_dict['username'] = sys_username
+            var_dict['url_choice'] = url_choice
+            var_dict['entity_choice'] = entity_choice
+            var_dict['SpatialFeatureChoice'] = SpatialFeatureChoice
+
             # Now create the spatial feature report
-            path = create_worddoc(username="Bernard", full_url=full_url, baseline_dict=baseline_cat_dict,
-                                  project_cat=df_ProjectCatalogue)
+            path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict, project_cat=df_ProjectCatalogue)
             return send_file(path, as_attachment=True)
 
     else:
