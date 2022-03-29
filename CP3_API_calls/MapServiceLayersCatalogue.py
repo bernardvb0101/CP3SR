@@ -36,10 +36,10 @@ def MapServiceLayersCatalogue(username, password, grant_type, full_url, API_call
     # del df_MapServiceLayerCatalogue['Grouping']
     """
     This creates a df like this:
-    	Id	Description	ForIntersection	Grouping
-0	174	City of Tshwane mSCOA Regional Segment	True	03 Administrative Boundaries
-1	175	City of Tshwane Regions	True	03 Administrative Boundaries
-2	176	City of Tshwane Wards	True	03 Administrative Boundaries
+    	Id	Description	                            ForIntersection	Grouping
+0	    174	City of Tshwane mSCOA Regional Segment	Administrative Boundaries
+1	    175	City of Tshwane Regions	    	        Administrative Boundaries
+2	    176	City of Tshwane Wards	    	        Administrative Boundaries
     """
     return_list = []
     return_list.append(MapServiceLayerCatalogue)

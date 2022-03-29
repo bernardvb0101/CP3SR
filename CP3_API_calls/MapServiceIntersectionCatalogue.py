@@ -7,6 +7,7 @@
 from CP3_API_calls.CP3_API_Classes import CP3Client_API
 
 def MapServiceIntersectionCatalogue(username, password, grant_type, full_url, API_call_dict, layer_dict, SpatialFeatureChoice):
+    global chosen_feature_code
     # 7. Call the MapServiceIntersection API, and create a data frame from it
     # Assign the API_Call variable
     API_Call = 'MapServiceIntersections'

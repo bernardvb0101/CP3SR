@@ -29,6 +29,7 @@ app.config['DOWNLOAD_FOLDER'] = "/DOWNLOAD_FOLDER"
 def home():
     global show_drop_down, all_well, url_choice, url_list, spatial_var, username, password, full_url, grant_type
     global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var, entityname_list, entity_choice
+    global layer_list
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
     global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2, sys_username
 
@@ -161,9 +162,16 @@ def home():
             var_dict['url_choice'] = url_choice
             var_dict['entity_choice'] = entity_choice
             var_dict['SpatialFeatureChoice'] = SpatialFeatureChoice
+            var_dict['Layer_List'] = layer_list
+            var_dict['total_datapoints'] = total_datapoints
+            var_dict['intersecting'] = intersecting
+            var_dict['no_intersects'] = no_intersects
+            var_dict['chosen_feature_qty'] = chosen_feature_qty
+
 
             # Now create the spatial feature report
-            path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict, project_cat=df_ProjectCatalogue)
+            path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict,
+                                  df_project_cat=df_ProjectCatalogue , df_intersects2=df_Intersects2)
             return send_file(path, as_attachment=True)
 
     else:
