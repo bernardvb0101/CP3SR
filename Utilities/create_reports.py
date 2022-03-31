@@ -6,7 +6,8 @@ from docx.shared import Cm
 from datetime import datetime
 
 
-def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2):
+def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_subset1, df_subset2, df_subset3,
+                   df_subset4, number_of_plots):
     """
     This module creates a spatial report in a MSWord File
     """
@@ -62,6 +63,9 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2):
     url_choice = var_dict['url_choice']
     entity_choice = var_dict['entity_choice']
     SpatialFeatureChoice = var_dict['SpatialFeatureChoice']
+    # Add an "s" for plural if it is not there in the word for spatial features. It reads better in the report.
+    if SpatialFeatureChoice[-1].lower() != "s":
+        SpatialFeatureChoice = f"{SpatialFeatureChoice}s"
     Layer_List = var_dict['Layer_List']
     total_datapoints = var_dict['total_datapoints']
     intersecting = var_dict['intersecting']
@@ -121,7 +125,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2):
 
     paragraphs3 = {}
     paragraphs3['1 n'] = "We hope you find this useful! Sincerely, "
-    paragraphs3['1 i'] = "The Novus3 Team."
+    paragraphs3['2 i'] = "The Novus3 Team."
 
     # Document Main Heading
     #head_formatter(headings0)
@@ -136,9 +140,6 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2):
     # Add a page break
     document.add_page_break()
 
-    # heading_1 = "1. Introduction"
-    # heading1_1 = "a. Addresses, Contact Details & Website"
-
     headings1 = {}
     headings1['1'] = "1. Introduction"
 
@@ -149,7 +150,8 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2):
     paragraphs4['2 i'] = f"{total_datapoints}"
     paragraphs4['3 n'] = f" projects of which a total of "
     paragraphs4['4 i'] = f"{no_intersects} ({'{0:.3g}'.format(perc_no_intersects)}%)"
-    paragraphs4['5 n'] = f" do not have any recorded intersection (overlap) with any of the following spatial features:"
+    paragraphs4['5 n'] = f" projects do not have any recorded intersection (overlap) with any of the following " \
+                         f"spatial features:"
     teller = 6
     for feature in Layer_List:
         paragraphs4[f"{teller} lb"] = f"{feature}"
@@ -182,17 +184,123 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2):
     # fig = px.pie(df_intersects2, values='Projects', names='Intersects', title='Intersecting vs Non Intersecting Projects')
     # fig = px.pie(df_intersects2, values='Projects', names='Intersects', color_discrete_sequence=px.colors.sequential.BuGn)
     colors = ['red', 'green']
-    fig = px.pie(df_intersects2, values='Projects', names='Intersects')
-    fig.update_traces(marker=dict(colors=colors, line=dict(color='#000000', width=2)))
-    fig.write_image("./static/images/fig1.png")
+    fig1 = px.pie(df_intersects2, values='Projects', names='Intersects')
+    fig1.update_traces(marker=dict(colors=colors, line=dict(color='#000000', width=2)))
+    fig1.write_image("./static/images/fig1.png")
     document.add_picture(f"./static/images/fig1.png", width=Cm(15))
 
+    # Add a page break
+    # document.add_page_break()
+
+    headings2 = {}
+    headings2['1'] = f"2. {SpatialFeatureChoice} Analysis"
+
     paragraphs5 = {}
-    paragraphs5["1 al"] = "The above picture..."
+    paragraphs5['1 n'] = f"There is a total number of "
+    paragraphs5['2 b'] = f"{chosen_feature_qty}"
+    paragraphs5['3 i'] = f" {SpatialFeatureChoice}."
+    paragraphs5['4 n'] = f" Each of the "
+    paragraphs5['5 i'] = f"{SpatialFeatureChoice}"
+    paragraphs5['6 n'] = f" has two important perspectives namely:"
+    paragraphs5['7 lb'] = f"the number of  projects within each geographic area and;"
+    paragraphs5['8 lb'] = f"the total capital demand per area."
 
-    par_formatter(paragraphs5)
+
+    head_formatter(headings2)
+
+    paragraphs6 ={}
+    paragraphs7 = {}
+    paragraphs8 = {}
+    match number_of_plots:
+        case 1:
+                fig2_1 = px.bar(df_subset1, x='City of Tshwane Wards', y='Projects per City of Tshwane Wards',
+                                color='Capital Demand',
+                                height=500)
+                fig2_1.write_image("./static/images/fig2_1.png")
+                paragraphs5['9 cp'] = f"Figure 2: Projects and Capital Demand per {SpatialFeatureChoice}"
+                par_formatter(paragraphs5)
+                document.add_picture(f"./static/images/fig2_1.png", width=Cm(15))
+        case 2:
+                fig2_1 = px.bar(df_subset1, x='City of Tshwane Wards', y='Projects per City of Tshwane Wards',
+                                color='Capital Demand',
+                                height=500)
+                fig2_1.write_image("./static/images/fig2_1.png")
+                fig2_2 = px.bar(df_subset1, x='City of Tshwane Wards', y='Projects per City of Tshwane Wards',
+                                color='Capital Demand',
+                                height=500)
+                fig2_2.write_image("./static/images/fig2_2.png")
+                paragraphs5['9 cp'] = f"Figure 2.1: Projects and Capital Demand per {SpatialFeatureChoice} (1/2)"
+                par_formatter(paragraphs5)
+                document.add_picture(f"./static/images/fig2_1.png", width=Cm(15))
+                paragraphs6['1 cp'] = f"Figure 2.2: Projects and Capital Demand per {SpatialFeatureChoice} (2/2)"
+                par_formatter(paragraphs6)
+                document.add_picture(f"./static/images/fig2_2.png", width=Cm(15))
+        case 3:
+                fig2_1 = px.bar(df_subset1, x='City of Tshwane Wards', y='Projects per City of Tshwane Wards',
+                                color='Capital Demand',
+                                height=500)
+                fig2_1.write_image("./static/images/fig2_1.png")
+                fig2_2 = px.bar(df_subset1, x='City of Tshwane Wards', y='Projects per City of Tshwane Wards',
+                                color='Capital Demand',
+                                height=500)
+                fig2_2.write_image("./static/images/fig2_2.png")
+                fig2_3 = px.bar(df_subset1, x='City of Tshwane Wards', y='Projects per City of Tshwane Wards',
+                                color='Capital Demand',
+                                height=500)
+                fig2_3.write_image("./static/images/fig2_3.png")
+                paragraphs5['9 cp'] = f"Figure 2.1: Projects and Capital Demand per {SpatialFeatureChoice} (1/3)"
+                par_formatter(paragraphs5)
+                document.add_picture(f"./static/images/fig2_1.png", width=Cm(15))
+                paragraphs6['1 cp'] = f"Figure 2.2: Projects and Capital Demand per {SpatialFeatureChoice} (2/3)"
+                par_formatter(paragraphs6)
+                document.add_picture(f"./static/images/fig2_2.png", width=Cm(15))
+                paragraphs7['1 cp'] = f"Figure 2.3: Projects and Capital Demand per {SpatialFeatureChoice} (3/3)"
+                par_formatter(paragraphs7)
+                document.add_picture(f"./static/images/fig2_3.png", width=Cm(15))
+        case 4:
+                fig2_1 = px.bar(df_subset1, x='City of Tshwane Wards', y='Projects per City of Tshwane Wards',
+                                color='Capital Demand',
+                                height=500)
+                fig2_1.write_image("./static/images/fig2_1.png")
+                fig2_2 = px.bar(df_subset1, x='City of Tshwane Wards', y='Projects per City of Tshwane Wards',
+                                color='Capital Demand',
+                                height=500)
+                fig2_2.write_image("./static/images/fig2_2.png")
+                fig2_3 = px.bar(df_subset1, x='City of Tshwane Wards', y='Projects per City of Tshwane Wards',
+                                color='Capital Demand',
+                                height=500)
+                fig2_3.write_image("./static/images/fig2_3.png")
+                fig2_4 = px.bar(df_subset1, x='City of Tshwane Wards', y='Projects per City of Tshwane Wards',
+                                color='Capital Demand',
+                                height=500)
+                fig2_4.write_image("./static/images/fig2_4.png")
+                paragraphs5['9 cp'] = f"Figure 2.1: Projects and Capital Demand per {SpatialFeatureChoice} (1/4)"
+                par_formatter(paragraphs5)
+                document.add_picture(f"./static/images/fig2_1.png", width=Cm(15))
+                paragraphs6['1 cp'] = f"Figure 2.2: Projects and Capital Demand per {SpatialFeatureChoice} (2/4)"
+                par_formatter(paragraphs6)
+                document.add_picture(f"./static/images/fig2_2.png", width=Cm(15))
+                paragraphs7['1 cp'] = f"Figure 2.3: Projects and Capital Demand per {SpatialFeatureChoice} (3/4)"
+                par_formatter(paragraphs7)
+                document.add_picture(f"./static/images/fig2_3.png", width=Cm(15))
+                paragraphs8['1 cp'] = f"Figure 2.4: Projects and Capital Demand per {SpatialFeatureChoice} (4/4)"
+                par_formatter(paragraphs7)
+                document.add_picture(f"./static/images/fig2_4.png", width=Cm(15))
 
 
+
+
+
+
+    """
+    There is a total number of **`r chosen_feature_qty`** `r chosen_feature`. Each of the `r chosen_feature` has two 
+    important perspectives namely:`r br()`
+    - the number of  projects within each geographic area and;`r br()`
+    - the total capital demand per area.  `r br()`
+    These two perspectives are shown in the graphics below. The lengths of the bars shown depict the number of projects 
+    in `r chosen_feature`. The colour of each bar indicates the amount of capital requested within each of these areas
+     - the deeper red colours are indicative of higher capital demands.
+    """
 
     # Add a Page with General Information regarding the Municipality
     # document.add_heading(heading_1, level=1)

@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, url_for, redirect, flash, session, send_file
 import os
 import pandas as pd
+import numpy as np
 from Utilities.url_exists import URL_exists
 from CP3_API_calls.Create_API_Variables import create_vars
 from CP3_API_calls.BaselineCatalogue import baseline_catalogue
@@ -29,7 +30,7 @@ app.config['DOWNLOAD_FOLDER'] = "/DOWNLOAD_FOLDER"
 def home():
     global show_drop_down, all_well, url_choice, url_list, spatial_var, username, password, full_url, grant_type
     global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var, entityname_list, entity_choice
-    global layer_list
+    global layer_list, number_of_plots
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
     global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2, sys_username
 
@@ -156,6 +157,96 @@ def home():
                 feature_intersect_dict[feature] = project_dict
             # Now this dictionary can be used to query spatial feature to get to the projects and their intersects.
             #print(feature_intersect_dict['Ward 100'])
+
+            # Put this entire dictionary in a dataframe
+            # this dataaframe contains
+            df_FeatureIntersectPer = pd.DataFrame(feature_intersect_dict)
+            # Replace all the NaN's with zeros
+            df_FeatureIntersectPer.replace(np.nan, 0, inplace=True)
+
+            # Also, Create a 2 lists with 1) the number of projects per spatial feature and 2) the budget per spatial feature
+            list_nr = []
+            list_cost = []
+            for feature in list_of_features:
+                # Create the list containing how many project per wards are there
+                list_nr.append(len(
+                    df_MapServiceIntersections[df_MapServiceIntersections['FeatureClassName'] == feature]['ProjectId']))
+                # Create a list of the total budget per ward asked
+
+                # Before you determine the subtotat for that spatial feature, reset the sub_total variable to 0
+                sub_total = 0
+                # iterate over the sub-dictionaries
+                for key, value in feature_intersect_dict[feature].items():
+                    # Get the budget of each project and multiply with the % overlap
+                    try:
+                        sub_total += df_CapexBudgetDemandCatalogue.loc[
+                                         df_CapexBudgetDemandCatalogue['ProjectId'] == key, 'Amount'].iloc[0] * value
+                    except IndexError:  # There is no budget demand for this project
+                        pass
+                # Now this total can be added to the list
+                list_cost.append(sub_total)
+            # With these lists a new dataframe can be created to plot
+            # Thus, create a dataframe/dataframes containing all the spatial feautures selected, each containing the
+            # number of projects in that feature and the capital demand per that feature
+            # Decide on the number of data sets depending on the size of the data
+            if chosen_feature_qty <= 40:  # Only one dataset
+                number_of_plots = 1
+                df_subset1 = pd.DataFrame({SpatialFeatureChoice: list_of_features, f'Projects per {SpatialFeatureChoice}': list_nr,
+                                           f'Capital Demand': list_cost})
+                df_subset2 = {}
+                df_subset3 = {}
+                df_subset4 = {}
+            elif chosen_feature_qty > 40 and chosen_feature_qty <= 80:  # Create 2 data sets
+                number_of_plots = 2
+                slicer = int(round(chosen_feature_qty / number_of_plots, 0)) + 1
+                df_subset1 = pd.DataFrame(
+                    {SpatialFeatureChoice: list_of_features[0:slicer], f'Projects per {SpatialFeatureChoice}': list_nr[0:slicer],
+                     f'Capital Demand': list_cost[0:slicer]})
+                df_subset2 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer:chosen_feature_qty],
+                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer:chosen_feature_qty],
+                                           f'Capital Demand': list_cost[slicer:chosen_feature_qty]})
+                df_subset3 = {}
+                df_subset4 = {}
+            elif chosen_feature_qty > 80 and chosen_feature_qty <= 120:  # Create 3 data sets
+                number_of_plots = 3
+                slicer = int(round(chosen_feature_qty / number_of_plots, 0)) + 1
+                df_subset1 = pd.DataFrame(
+                    {SpatialFeatureChoice: list_of_features[0:slicer], f'Projects per {SpatialFeatureChoice}': list_nr[0:slicer],
+                     f'Capital Demand': list_cost[0:slicer]})
+                df_subset2 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer:slicer * 2],
+                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer:slicer * 2],
+                                           f'Capital Demand': list_cost[slicer:slicer * 2]})
+                df_subset3 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer * 2:chosen_feature_qty],
+                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer * 2:chosen_feature_qty],
+                                           f'Capital Demand': list_cost[slicer * 2:chosen_feature_qty]})
+                df_subset4 = {}
+            else:  # Create 4 plots
+                number_of_plots = 4
+                slicer = int(round(chosen_feature_qty / number_of_plots, 0)) + 1
+                df_subset1 = pd.DataFrame(
+                    {SpatialFeatureChoice: list_of_features[0:slicer], f'Projects per {SpatialFeatureChoice}': list_nr[0:slicer],
+                     f'Capital Demand': list_cost[0:slicer]})
+                df_subset2 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer:slicer * 2],
+                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer:slicer * 2],
+                                           f'Capital Demand': list_cost[slicer:slicer * 2]})
+                df_subset3 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer * 2:slicer * 3],
+                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer * 2:slicer * 3],
+                                           f'Capital Demand': list_cost[slicer * 2:slicer * 3]})
+                df_subset4 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer * 3:chosen_feature_qty],
+                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer * 3:chosen_feature_qty],
+                                           f'Capital Demand': list_cost[slicer * 3:chosen_feature_qty]})
+
+            """
+            df_EntireSet = pd.DataFrame(
+                {SpatialFeatureChoice: list_of_features, f'Projects per {SpatialFeatureChoice}': list_nr,
+                 f'Capital Demand': list_cost})
+            df_EntireSet looks like this: (df_subsets also!)
+            	City of Tshwane Wards	Projects per City of Tshwane Wards	Capital Demand per City of Tshwane Wards
+            0	Ward 58	                85	                                5.605180e+08
+            1	Ward 66	                8	                                1.557022e+0
+            ...
+            """
+
             # Wrap all the loose variables in a dictionary for use in the report
             var_dict = {}
             var_dict['username'] = sys_username
@@ -171,7 +262,9 @@ def home():
 
             # Now create the spatial feature report
             path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict,
-                                  df_project_cat=df_ProjectCatalogue , df_intersects2=df_Intersects2)
+                                  df_project_cat=df_ProjectCatalogue , df_intersects2=df_Intersects2,
+                                  df_subset1 = df_subset1, df_subset2=df_subset2, df_subset3=df_subset3,
+                                  df_subset4=df_subset4, number_of_plots=number_of_plots)
             return send_file(path, as_attachment=True)
 
     else:
