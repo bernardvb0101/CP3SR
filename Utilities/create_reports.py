@@ -80,7 +80,8 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     # Put an % in and * 100
     def format_percent(n):
         """
-        This function formats a number entry into a percentage by putting an '%' in the back and delimiting with 2 decimals
+        This function formats a number entry into a percentage by putting an '%' in the back and delimiting with 2
+        decimals
         """
         n = float(n)
         n = n * 100
@@ -113,18 +114,27 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     datenow = datetime.today().strftime('%Y-%m-%d')  # Stamp the date
     urlname = url_choice.split(sep=".", maxsplit=10)[1].capitalize()
     word_file_name = f"{urlname}_SpatialRep_{timenow}.docx"
+
+    df_EntireSet_Temp = df_EntireSet
+    print(df_EntireSet.head())
+
+    # Create variables about the projects
     maximum_projects = df_EntireSet[f'Projects per {x_axis_values}'].max()
     maximum_projects_feature = df_EntireSet.loc[df_EntireSet[f'Projects per {x_axis_values}'] == df_EntireSet[
-        'Projects per {x_axis_values}'].max(), '{x_axis_values}'].iloc[0]
+        f'Projects per {x_axis_values}'].max(), f'{SpatialFeatureChoice}'].iloc[0]
     minimum_projects = df_EntireSet[f'Projects per {x_axis_values}'].min()
     minimum_projects_feature = df_EntireSet.loc[df_EntireSet[f'Projects per {x_axis_values}'] == df_EntireSet[
-        'Projects per {x_axis_values}'].min(), '{x_axis_values}'].iloc[0]
+        f'Projects per {x_axis_values}'].min(), f'{SpatialFeatureChoice}'].iloc[0]
     average_projects = df_EntireSet[f'Projects per {x_axis_values}'].mean()
     seventy_fifth_projects = df_EntireSet[f'Projects per {x_axis_values}'].quantile(q=0.75)
     sum_projects = df_EntireSet[f'Projects per {x_axis_values}'].sum()
+    # Get the top 5 with highst number of projects
+    df_EntireSet_Temp.sort_values(f'Projects per {x_axis_values}', inplace=True, ascending=True)
+    sum_top_five_projects = df_EntireSet_Temp[f'Projects per {x_axis_values}'].tail().sum()
+    sum_top_five_projects_perc_of_total = format_percent(sum_top_five_projects/sum_projects)
 
-
-
+    """
+    # Create variables about the costs
     maximum_cost = format_budget(df_EntireSet['Capital Demand'].max())
     maximum_cost_feature = \
     df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].max(), 'Capital Demand'].iloc[0]
@@ -135,6 +145,15 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     average_cost = format_budget(df_EntireSet['Capital Demand'].mean())
     seventy_fifth_cost = format_budget(df_EntireSet['Capital Demand'].quantile(q=0.75))
     sum_cost = format_budget(df_EntireSet['Capital Demand'].sum())
+    max_cost_perc_of_total = format_percent(maximum_cost/sum_cost)
+    df_EntireSet_Temp.sort_values('Capital Demand', inplace=True, ascending=True)
+    sum_top_five_cost = format_budget(df_EntireSet_Temp['Capital Demand'].tail().sum())
+    sum_top_five_cost_perc_of_total = format_percent(sum_top_five_cost/sum_cost)
+    """
+
+
+
+
 
     # This provides the location of the template word file
     document = Document(docx=f"./DOWNLOAD_FOLDER/Master.docx")
@@ -212,7 +231,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     for feature in Layer_List:
         paragraphs4[f"{teller} xx"] = f"{feature}"
         teller += 1
-    paragraphs4[f"{teller} al"] = f"The probable reasons for the {no_intersects} non intersecting projects reported " \
+    paragraphs4[f"{teller} al"] = f"\nThe probable reasons for the {no_intersects} non intersecting projects reported " \
                                   f"are that:"
     teller += 1
     paragraphs4[f"{teller} xx"] = f"these projects simply do not have a location associated with them yet (most " \
@@ -222,7 +241,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                                   f"the wrong place (e.g. outside the boundaries of {urlname} - this is very " \
                                   f"rarely the reason)."
     teller += 1
-    paragraphs4[f"{teller} al"] = f"It is important to take note of the {'{0:.3g}'.format(perc_no_intersects)}%" \
+    paragraphs4[f"{teller} al"] = f"\nIt is important to take note of the {'{0:.3g}'.format(perc_no_intersects)}%" \
                                   f" projects that do not intersect with any spatial feature when " \
                                   f"appraising this report because a similar proportion of non-intersecting " \
                                   f"projects may be present within the specific geographic feature queried."
@@ -259,7 +278,54 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     paragraphs5['6 n'] = f" has two important perspectives namely:"
     paragraphs5['7 xx'] = f"the number of  projects within each geographic area and;"
     paragraphs5['8 xx'] = f"the total capital demand per area."
-    paragraphs5['9 n'] = f""
+    paragraphs5['9 al'] = f"\nThe following information relates to the number of projects in {SpatialFeatureChoice}:"
+    paragraphs5['10 xx'] = f"{maximum_projects_feature} has the highest number of projects: {maximum_projects}" \
+                           f" projects;"
+    paragraphs5['11 xx'] = f"{minimum_projects_feature} has the lowest number of projects: {minimum_projects} projects;"
+    paragraphs5[
+        '12 xx'] = f"The average number of projects per {SpatialFeatureChoice} is {'{0:.3g}'.format(average_projects)} " \
+                   f"projects;"
+    paragraphs5['13 xx'] = f"The 75th percentile of projects per {SpatialFeatureChoice} is {seventy_fifth_projects} " \
+                           f"projects;"
+    paragraphs5['14 xx'] = f"The total number of projects in all {SpatialFeatureChoice} is {sum_projects} projects;"
+    paragraphs5['15 xx'] = f"The 5 {SpatialFeatureChoice} with the most projects have a combined total of " \
+                           f"{sum_top_five_projects} projects. This accounts for {sum_top_five_projects_perc_of_total}" \
+                           f" of the total number of projects."
+
+    """
+    # Create variables about the projects
+    maximum_projects = df_EntireSet[f'Projects per {x_axis_values}'].max()
+    maximum_projects_feature = df_EntireSet.loc[df_EntireSet[f'Projects per {x_axis_values}'] == df_EntireSet[
+        'Projects per {x_axis_values}'].max(), '{x_axis_values}'].iloc[0]
+    minimum_projects = df_EntireSet[f'Projects per {x_axis_values}'].min()
+    minimum_projects_feature = df_EntireSet.loc[df_EntireSet[f'Projects per {x_axis_values}'] == df_EntireSet[
+        'Projects per {x_axis_values}'].min(), '{x_axis_values}'].iloc[0]
+    average_projects = df_EntireSet[f'Projects per {x_axis_values}'].mean()
+    seventy_fifth_projects = df_EntireSet[f'Projects per {x_axis_values}'].quantile(q=0.75)
+    sum_projects = df_EntireSet[f'Projects per {x_axis_values}'].sum()
+    # Get the top 5 with highst number of projects
+    df_EntireSet_Temp.sort_values(f'Projects per {x_axis_values}', inplace=True, ascending=True)
+    sum_top_five_projects = df_EntireSet_Temp[f'Projects per {x_axis_values}'].tail().sum()
+    sum_top_five_projects_perc_of_total = format_percent(sum_top_five_projects/sum_projects)
+   
+    # Create variables about the costs
+    maximum_cost = format_budget(df_EntireSet['Capital Demand'].max())
+    maximum_cost_feature = \
+    df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].max(), 'Capital Demand'].iloc[0]
+    minimum_cost = format_budget(df_EntireSet['Capital Demand'].min())
+    minimum_cost_feature = \
+        df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].min(), 'Capital Demand'].iloc[
+            0]
+    average_cost = format_budget(df_EntireSet['Capital Demand'].mean())
+    seventy_fifth_cost = format_budget(df_EntireSet['Capital Demand'].quantile(q=0.75))
+    sum_cost = format_budget(df_EntireSet['Capital Demand'].sum())
+    max_cost_perc_of_total = format_percent(maximum_cost/sum_cost)
+    df_EntireSet_Temp.sort_values('Capital Demand', inplace=True, ascending=True)
+    sum_top_five_cost = format_budget(df_EntireSet_Temp['Capital Demand'].tail().sum())
+    sum_top_five_cost_perc_of_total = format_percent(sum_top_five_cost/sum_cost)
+    """
+
+
 
 
     head_formatter(headings2)
