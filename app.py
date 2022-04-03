@@ -189,63 +189,59 @@ def home():
             # Thus, create a dataframe/dataframes containing all the spatial feautures selected, each containing the
             # number of projects in that feature and the capital demand per that feature
             # Decide on the number of data sets depending on the size of the data
-            if chosen_feature_qty <= 40:  # Only one dataset
-                number_of_plots = 1
-                df_subset1 = pd.DataFrame({SpatialFeatureChoice: list_of_features, f'Projects per {SpatialFeatureChoice}': list_nr,
-                                           f'Capital Demand': list_cost})
-                df_subset2 = {}
-                df_subset3 = {}
-                df_subset4 = {}
-            elif chosen_feature_qty > 40 and chosen_feature_qty <= 80:  # Create 2 data sets
-                number_of_plots = 2
-                slicer = int(round(chosen_feature_qty / number_of_plots, 0)) + 1
-                df_subset1 = pd.DataFrame(
-                    {SpatialFeatureChoice: list_of_features[0:slicer], f'Projects per {SpatialFeatureChoice}': list_nr[0:slicer],
-                     f'Capital Demand': list_cost[0:slicer]})
-                df_subset2 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer:chosen_feature_qty],
-                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer:chosen_feature_qty],
-                                           f'Capital Demand': list_cost[slicer:chosen_feature_qty]})
-                df_subset3 = {}
-                df_subset4 = {}
-            elif chosen_feature_qty > 80 and chosen_feature_qty <= 120:  # Create 3 data sets
-                number_of_plots = 3
-                slicer = int(round(chosen_feature_qty / number_of_plots, 0)) + 1
-                df_subset1 = pd.DataFrame(
-                    {SpatialFeatureChoice: list_of_features[0:slicer], f'Projects per {SpatialFeatureChoice}': list_nr[0:slicer],
-                     f'Capital Demand': list_cost[0:slicer]})
-                df_subset2 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer:slicer * 2],
-                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer:slicer * 2],
-                                           f'Capital Demand': list_cost[slicer:slicer * 2]})
-                df_subset3 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer * 2:chosen_feature_qty],
-                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer * 2:chosen_feature_qty],
-                                           f'Capital Demand': list_cost[slicer * 2:chosen_feature_qty]})
-                df_subset4 = {}
-            else:  # Create 4 plots
-                number_of_plots = 4
-                slicer = int(round(chosen_feature_qty / number_of_plots, 0)) + 1
-                df_subset1 = pd.DataFrame(
-                    {SpatialFeatureChoice: list_of_features[0:slicer], f'Projects per {SpatialFeatureChoice}': list_nr[0:slicer],
-                     f'Capital Demand': list_cost[0:slicer]})
-                df_subset2 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer:slicer * 2],
-                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer:slicer * 2],
-                                           f'Capital Demand': list_cost[slicer:slicer * 2]})
-                df_subset3 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer * 2:slicer * 3],
-                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer * 2:slicer * 3],
-                                           f'Capital Demand': list_cost[slicer * 2:slicer * 3]})
-                df_subset4 = pd.DataFrame({SpatialFeatureChoice: list_of_features[slicer * 3:chosen_feature_qty],
-                                           f'Projects per {SpatialFeatureChoice}': list_nr[slicer * 3:chosen_feature_qty],
-                                           f'Capital Demand': list_cost[slicer * 3:chosen_feature_qty]})
+            if SpatialFeatureChoice[-1].lower() != "s":
+                SpatialFeatureChoice = f"{SpatialFeatureChoice}s"
+            # 1st just do this - it helps the data headings read better
+            if SpatialFeatureChoice[-1].lower() == 's':
+                column_values = SpatialFeatureChoice[:-1]
+            else:
+                column_values = SpatialFeatureChoice
 
+            # 1st Create Dataset of all the data to split up for grpahing purposes
+            df_EntireSet = pd.DataFrame(
+                {SpatialFeatureChoice: list_of_features, f'Projects per {column_values}': list_nr,
+                 f'Capital Demand': list_cost})
+            # Now sort the dataset in order of number of projects from largest to smallest
+            df_EntireSet.sort_values(f'Projects per {column_values}', inplace=True, ascending=True)
             """
             df_EntireSet = pd.DataFrame(
                 {SpatialFeatureChoice: list_of_features, f'Projects per {SpatialFeatureChoice}': list_nr,
                  f'Capital Demand': list_cost})
             df_EntireSet looks like this: (df_subsets also!)
-            	City of Tshwane Wards	Projects per City of Tshwane Wards	Capital Demand per City of Tshwane Wards
+                City of Tshwane Wards	Projects per City of Tshwane Wards	Capital Demand per City of Tshwane Wards
             0	Ward 58	                85	                                5.605180e+08
             1	Ward 66	                8	                                1.557022e+0
             ...
             """
+            # The splitting of the df_EntireSet dataframe will happen below, depending on 'number_of_plots' variable
+
+            if chosen_feature_qty <= 40:  # Only one dataset
+                number_of_plots = 1
+                df_subset1 = df_EntireSet
+                df_subset2 = {}
+                df_subset3 = {}
+                df_subset4 = {}
+            elif chosen_feature_qty > 40 and chosen_feature_qty <= 80:  # Create 2 data sets
+                number_of_plots = 2
+                dfs = np.array_split(df_EntireSet, number_of_plots)
+                df_subset1 = dfs[0]
+                df_subset2 = dfs[1]
+                df_subset3 = {}
+                df_subset4 = {}
+            elif chosen_feature_qty > 80 and chosen_feature_qty <= 120:  # Create 3 data sets
+                number_of_plots = 3
+                dfs = np.array_split(df_EntireSet, number_of_plots)
+                df_subset1 = dfs[0]
+                df_subset2 = dfs[1]
+                df_subset3 = dfs[2]
+                df_subset4 = {}
+            else:  # Create 4 plots
+                number_of_plots = 4
+                dfs = np.array_split(df_EntireSet, number_of_plots)
+                df_subset1 = dfs[0]
+                df_subset2 = dfs[1]
+                df_subset3 = dfs[2]
+                df_subset4 = dfs[3]
 
             # Wrap all the loose variables in a dictionary for use in the report
             var_dict = {}
@@ -264,7 +260,7 @@ def home():
             path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict,
                                   df_project_cat=df_ProjectCatalogue , df_intersects2=df_Intersects2,
                                   df_subset1 = df_subset1, df_subset2=df_subset2, df_subset3=df_subset3,
-                                  df_subset4=df_subset4, number_of_plots=number_of_plots)
+                                  df_subset4=df_subset4, number_of_plots=number_of_plots, df_EntireSet=df_EntireSet)
             return send_file(path, as_attachment=True)
 
     else:
