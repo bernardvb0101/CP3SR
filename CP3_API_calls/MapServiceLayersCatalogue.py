@@ -3,7 +3,7 @@
 # Create a dictionary from the available Map Service Layers: "layer_dict"
 from CP3_API_calls.CP3_API_Classes import CP3Client_API
 
-def MapServiceLayersCatalogue(username, password, grant_type, full_url, API_call_dict):
+def MapServiceLayersCatalogue(username, password, grant_type, url_choice, API_call_dict):
     # 6. Call the MapServiceLayerCatalogue API, and create a dictionary of available layers
     # Assign the API_Call variable
     API_Call = 'MapServiceLayerCatalogue'
@@ -12,7 +12,7 @@ def MapServiceLayersCatalogue(username, password, grant_type, full_url, API_call
     # Assign the API_parameters variable
     API_parameters = API_call_dict[API_Call][1]
     # Call the inherited class
-    client2 = CP3Client_API(username, password, grant_type, full_url, API_Call, API_return_type, API_parameters)
+    client2 = CP3Client_API(username, password, grant_type, url_choice, API_Call, API_return_type, API_parameters)
     # You need to call the token again for this inherited class. The 1st token call was for the help API. This one is for the API call
     token2 = client2.get_API_token
     # Assign the returned API to a variable

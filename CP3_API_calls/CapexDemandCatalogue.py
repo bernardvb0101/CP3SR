@@ -3,7 +3,7 @@
 # Create a data frame for the Capex Demand Catalogue: The name is "df_CapexBudgetDemandCatalogue"
 from CP3_API_calls.CP3_API_Classes import CP3Client_API
 
-def CapexDemandCatalogue(username, password, grant_type, full_url, API_call_dict, baselineAPIAccessTag_var):
+def CapexDemandCatalogue(username, password, grant_type, url_choice, API_call_dict, baselineAPIAccessTag_var):
     # 5. Call the CapExDemandCatalogue API, and create a CapexDemand Catalogue data frame from this call
     # Assign the API_Call variable
     API_Call = 'CapexBudgetDemandCatalogue'
@@ -14,7 +14,7 @@ def CapexDemandCatalogue(username, password, grant_type, full_url, API_call_dict
     # Pass it in like so:
     API_parameters = {'baselineAPIAccessTag': baselineAPIAccessTag_var}
     # Call the inherited class
-    client2 = CP3Client_API(username, password, grant_type, full_url, API_Call, API_return_type, API_parameters)
+    client2 = CP3Client_API(username, password, grant_type, url_choice, API_Call, API_return_type, API_parameters)
     # You need to call the token again for this inherited class. The 1st token call was for the help API. This one is for the API call
     token2 = client2.get_API_token
     # Assign the returned API to a variable

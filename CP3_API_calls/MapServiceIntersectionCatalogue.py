@@ -6,7 +6,7 @@
 
 from CP3_API_calls.CP3_API_Classes import CP3Client_API
 
-def MapServiceIntersectionCatalogue(username, password, grant_type, full_url, API_call_dict, layer_dict, SpatialFeatureChoice):
+def MapServiceIntersectionCatalogue(username, password, grant_type, url_choice, API_call_dict, layer_dict, SpatialFeatureChoice):
     global chosen_feature_code
     # 7. Call the MapServiceIntersection API, and create a data frame from it
     # Assign the API_Call variable
@@ -33,7 +33,7 @@ def MapServiceIntersectionCatalogue(username, password, grant_type, full_url, AP
     # = {'projectStatus': 'Active', 'locationType': 'WorksLocation', 'serviceLayerId': 176}
     # *******************************************************************************************************
     # Call the inherited class
-    client2 = CP3Client_API(username, password, grant_type, full_url, API_Call, API_return_type, API_parameters)
+    client2 = CP3Client_API(username, password, grant_type, url_choice, API_Call, API_return_type, API_parameters)
     # You need to call the token again for this inherited class. The 1st token call was for the help API. This one is for the API call
     token2 = client2.get_API_token
     # Assign the returned API to a variable

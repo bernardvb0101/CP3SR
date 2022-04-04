@@ -74,7 +74,8 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         """
         This function formats a number entry into a currency by putting an 'R' in front and delimiting with commas
         """
-        currency = "R{:,}".format(int(n))
+        currency = "R{:0,.0f}".format(n).replace('R-', '-R')
+        # ${:0,.0f}
         return currency
 
     # Put an % in and * 100
@@ -128,35 +129,44 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     average_projects = df_EntireSet[f'Projects per {x_axis_values}'].mean()
     seventy_fifth_projects = df_EntireSet[f'Projects per {x_axis_values}'].quantile(q=0.75)
     sum_projects = df_EntireSet[f'Projects per {x_axis_values}'].sum()
-    # Get the top 5 with highst number of projects
+    min_projects_perc_of_total = format_percent(minimum_projects/sum_projects)
+    max_projects_perc_of_total = format_percent(maximum_projects/sum_projects)
+    # Re-sort the df to get the top 5 wards with the most projects
     df_EntireSet_Temp.sort_values(f'Projects per {x_axis_values}', inplace=True, ascending=True)
     sum_top_five_projects = df_EntireSet_Temp[f'Projects per {x_axis_values}'].tail().sum()
     sum_top_five_projects_perc_of_total = format_percent(sum_top_five_projects/sum_projects)
 
-    """
+
     # Create variables about the costs
-    maximum_cost = format_budget(df_EntireSet['Capital Demand'].max())
+    maximum_cost_float = df_EntireSet['Capital Demand'].max()
+    maximum_cost = format_budget(maximum_cost_float)
     maximum_cost_feature = \
-    df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].max(), 'Capital Demand'].iloc[0]
-    minimum_cost = format_budget(df_EntireSet['Capital Demand'].min())
+    df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].max(), f'{SpatialFeatureChoice}'].iloc[0]
+    minimum_cost_float = df_EntireSet['Capital Demand'].min()
+    minimum_cost = format_budget(minimum_cost_float)
     minimum_cost_feature = \
-        df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].min(), 'Capital Demand'].iloc[
+        df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].min(), f'{SpatialFeatureChoice}'].iloc[
             0]
-    average_cost = format_budget(df_EntireSet['Capital Demand'].mean())
-    seventy_fifth_cost = format_budget(df_EntireSet['Capital Demand'].quantile(q=0.75))
-    sum_cost = format_budget(df_EntireSet['Capital Demand'].sum())
-    max_cost_perc_of_total = format_percent(maximum_cost/sum_cost)
+    average_cost_float = df_EntireSet['Capital Demand'].mean()
+    average_cost = format_budget(average_cost_float)
+    seventy_fifth_cost_float = df_EntireSet['Capital Demand'].quantile(q=0.75)
+    seventy_fifth_cost = format_budget(seventy_fifth_cost_float)
+    sum_cost_float = df_EntireSet['Capital Demand'].sum()
+    sum_cost = format_budget(sum_cost_float)
+    max_cost_perc_of_total_float = df_EntireSet['Capital Demand'].max()/df_EntireSet['Capital Demand'].sum()
+    min_cost_perc_of_total_float = df_EntireSet['Capital Demand'].min()/df_EntireSet['Capital Demand'].sum()
+    max_cost_perc_of_total = format_percent(max_cost_perc_of_total_float)
+    min_cost_perc_of_total = format_percent(min_cost_perc_of_total_float)
+    # Re-sort the df to get the top 5 capital demand
     df_EntireSet_Temp.sort_values('Capital Demand', inplace=True, ascending=True)
-    sum_top_five_cost = format_budget(df_EntireSet_Temp['Capital Demand'].tail().sum())
-    sum_top_five_cost_perc_of_total = format_percent(sum_top_five_cost/sum_cost)
-    """
-
-
-
+    sum_top_five_cost_float = df_EntireSet_Temp['Capital Demand'].tail().sum()
+    sum_top_five_cost = format_budget(sum_top_five_cost_float)
+    sum_top_five_cost_perc_of_total_float = sum_top_five_cost_float/sum_cost_float
+    sum_top_five_cost_perc_of_total = format_percent(sum_top_five_cost_perc_of_total_float)
 
 
     # This provides the location of the template word file
-    document = Document(docx=f"./DOWNLOAD_FOLDER/Master.docx")
+    document = Document(docx=f"./ReportFactory/Master.docx")
 
     paragraphs00 = {}
     paragraphs00['1 tl'] = f"Spatial Query Report: {SpatialFeatureChoice}"
@@ -195,7 +205,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     paragraphs2['9 n'] = f" (similar to this report):"
     teller = 10
     for feature in Layer_List:
-        paragraphs2[f"{teller} bl"] = feature
+        paragraphs2[f"{teller} xx"] = feature
         teller += 1
 
     paragraphs3 = {}
@@ -278,10 +288,16 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     paragraphs5['6 n'] = f" has two important perspectives namely:"
     paragraphs5['7 xx'] = f"the number of  projects within each geographic area and;"
     paragraphs5['8 xx'] = f"the total capital demand per area."
+    # ********** Projects per feature **********
     paragraphs5['9 al'] = f"\nThe following information relates to the number of projects in {SpatialFeatureChoice}:"
     paragraphs5['10 xx'] = f"{maximum_projects_feature} has the highest number of projects: {maximum_projects}" \
-                           f" projects;"
-    paragraphs5['11 xx'] = f"{minimum_projects_feature} has the lowest number of projects: {minimum_projects} projects;"
+                           f" projects ({max_projects_perc_of_total} of total number of projects);"
+    if minimum_projects == 1:
+        paragraphs5['11 xx'] = f"{minimum_projects_feature} has the lowest number of projects: {minimum_projects} " \
+                               f"project ({min_projects_perc_of_total} of total number of projects);"
+    else:
+        paragraphs5['11 xx'] = f"{minimum_projects_feature} has the lowest number of projects: {minimum_projects} " \
+                               f"projects ({min_projects_perc_of_total} of total number of projects);"
     paragraphs5[
         '12 xx'] = f"The average number of projects per {SpatialFeatureChoice} is {'{0:.3g}'.format(average_projects)} " \
                    f"projects;"
@@ -291,41 +307,18 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     paragraphs5['15 xx'] = f"The 5 {SpatialFeatureChoice} with the most projects have a combined total of " \
                            f"{sum_top_five_projects} projects. This accounts for {sum_top_five_projects_perc_of_total}" \
                            f" of the total number of projects."
-
-    """
-    # Create variables about the projects
-    maximum_projects = df_EntireSet[f'Projects per {x_axis_values}'].max()
-    maximum_projects_feature = df_EntireSet.loc[df_EntireSet[f'Projects per {x_axis_values}'] == df_EntireSet[
-        'Projects per {x_axis_values}'].max(), '{x_axis_values}'].iloc[0]
-    minimum_projects = df_EntireSet[f'Projects per {x_axis_values}'].min()
-    minimum_projects_feature = df_EntireSet.loc[df_EntireSet[f'Projects per {x_axis_values}'] == df_EntireSet[
-        'Projects per {x_axis_values}'].min(), '{x_axis_values}'].iloc[0]
-    average_projects = df_EntireSet[f'Projects per {x_axis_values}'].mean()
-    seventy_fifth_projects = df_EntireSet[f'Projects per {x_axis_values}'].quantile(q=0.75)
-    sum_projects = df_EntireSet[f'Projects per {x_axis_values}'].sum()
-    # Get the top 5 with highst number of projects
-    df_EntireSet_Temp.sort_values(f'Projects per {x_axis_values}', inplace=True, ascending=True)
-    sum_top_five_projects = df_EntireSet_Temp[f'Projects per {x_axis_values}'].tail().sum()
-    sum_top_five_projects_perc_of_total = format_percent(sum_top_five_projects/sum_projects)
-   
-    # Create variables about the costs
-    maximum_cost = format_budget(df_EntireSet['Capital Demand'].max())
-    maximum_cost_feature = \
-    df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].max(), 'Capital Demand'].iloc[0]
-    minimum_cost = format_budget(df_EntireSet['Capital Demand'].min())
-    minimum_cost_feature = \
-        df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].min(), 'Capital Demand'].iloc[
-            0]
-    average_cost = format_budget(df_EntireSet['Capital Demand'].mean())
-    seventy_fifth_cost = format_budget(df_EntireSet['Capital Demand'].quantile(q=0.75))
-    sum_cost = format_budget(df_EntireSet['Capital Demand'].sum())
-    max_cost_perc_of_total = format_percent(maximum_cost/sum_cost)
-    df_EntireSet_Temp.sort_values('Capital Demand', inplace=True, ascending=True)
-    sum_top_five_cost = format_budget(df_EntireSet_Temp['Capital Demand'].tail().sum())
-    sum_top_five_cost_perc_of_total = format_percent(sum_top_five_cost/sum_cost)
-    """
-
-
+    # ********** Captial demand per feature **********
+    paragraphs5['16 al'] = f"\nThe following information relates to the capital demand in {SpatialFeatureChoice}:"
+    paragraphs5['17 xx'] = f"{maximum_cost_feature} has the highest capital demand: {maximum_cost} " \
+                           f"({max_cost_perc_of_total} of total capital demand);"
+    paragraphs5['18 xx'] = f"{minimum_cost_feature} has the lowest capital demand: {minimum_cost} " \
+                           f"({min_cost_perc_of_total} of total capital demand);"
+    paragraphs5['19 xx'] = f"The average capital demand per {SpatialFeatureChoice} is {average_cost};"
+    paragraphs5['20 xx'] = f"The 75th percentile of capital demand per {SpatialFeatureChoice} is {seventy_fifth_cost}."
+    paragraphs5['21 xx'] = f"The total capital demand in all {SpatialFeatureChoice} is {sum_cost};"
+    paragraphs5['22 xx'] = f"The 5 {SpatialFeatureChoice} with the highest capital demand have a combined total of " \
+                           f"{sum_top_five_cost}. This accounts for {sum_top_five_cost_perc_of_total}" \
+                           f" of the total capital demand."
 
 
     head_formatter(headings2)

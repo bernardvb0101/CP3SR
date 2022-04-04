@@ -7,9 +7,9 @@
 from CP3_API_calls.CP3_API_Classes import CP3Client
 
 
-def create_vars(username, password, grant_type, full_url):
+def create_vars(username, password, grant_type, url_choice):
     # Get the token
-    client = CP3Client(username, password, grant_type, full_url)
+    client = CP3Client(username, password, grant_type, url_choice)
     token = client.get_API_token
     # The 'get_API_help' method already extracts the return value as text using the ".text" attribute
     help = client.get_API_help
