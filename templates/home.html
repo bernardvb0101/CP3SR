@@ -13,21 +13,24 @@
   <body>
 
 
-<div class="container">
-  <div class="row justify-content-md-center">
+<div class="container"> <!-- Container 1 for Main "h1" Heading -->
+  <div class="row justify-content-md-center"> <!-- Row 1 for Main "h1" Heading justify center -->
     <div class="col-md-auto">
       <p class="h1">CP3 Spatial Report</p>
     </div>
   </div>
 </div> <!-- End div container 1 -->
 
-<div class="container">
+<div class="container"> <!-- Container 2 for URLs and inputs fields -->
 
     <form action="/" method="POST">
-
-      <div class="row justify-content-center">
+      <div class="row justify-content-center">  <!--Row 2 start for the headings of the 2 columns -->
         <div class="col-4 p-3 border bg-light">
-          <div class="p-3 border bg-light border-danger rounded fs-2">Available URLs</div> <!-- End Avail URLs border -->
+          {% if not show_drop_down %}
+            <div class="p-3 border bg-light border-danger rounded fs-2">Available URLs</div> <!-- End Avail URLs border -->
+          {% else %}
+            <div class="p-3 border bg-light border-danger rounded fs-2">Chosen URLs</div> <!-- End Avail URLs border -->
+          {% endif %}
         </div> <!-- End col4 1 -->
           <div class="col-4 p-3 border bg-light">
           {% if show_drop_down %}
@@ -37,50 +40,71 @@
           {% endif %}
         </div> <!-- End col4 2 -->
       </div> <!-- End row 1 -->
-      <div class="row justify-content-center">
+      <div class="row justify-content-center"> <!--Row 3 start for the content of the 2 columns -->
         <div class="col-4 p-3 border bg-light">
             <div class="border bg-light border-danger rounded">
-
-              {% for url in url_list %}
+              {% if not show_drop_down %} <!-- Show enabled URLs for user to make a choice -->
+                {% for url in url_list %}
+                  <div class="form-check p-3 ms-3">
+                    {% if url_choice == url %} <!-- Check the radio button according to the value of url_choice -->
+                      <input class="form-check-input" type="radio" name="flexRadioDefault" id="{{ url }}" value="{{ url }}" checked>
+                    {% else %}
+                      <input class="form-check-input" type="radio" name="flexRadioDefault" id="{{ url }}" value="{{ url }}">
+                    {% endif %}
+                    <label class="form-check-label" for="{{ url }}">
+                      {{ url }}
+                    </label>
+                  </div> <!-- End form check  -->
+                {% endfor %}
+              {% else %} <!-- Show chosen URL only when choice was made -->
                 <div class="form-check p-3 ms-3">
-                  {% if url_choice == url %} <!-- Check the radio button according to the value of url_choice -->
-                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="{{ url }}" value="{{ url }}" checked>
-                  {% else %}
-                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="{{ url }}" value="{{ url }}">
-                  {% endif %}
-                  <label class="form-check-label" for="{{ url }}">
-                    {{ url }}
+                  <input class="form-check-input" type="radio" name="flexRadioDefault" id="{{ url_choice }}" value="{{ url_choice }}" checked disabled>
+                  <label class="form-check-label" for="{{ url_choice }}">
+                    {{ url_choice }}
                   </label>
                 </div> <!-- End form check  -->
-              {% endfor %}
-
+              {% endif %}
             </div> <!-- End radios border -->
         </div> <!-- End column-->
         <div class="col-4 p-3 border bg-light">
-          {% if not show_drop_down %} <!-- Show the submit button when APIs have not been called yet successfully -->
-            <div class="mb-3">
-              <label for="username" class="form-label">Username</label>
-              <input type="text" class="form-control" id="username" aria-describedby="username" name="username">
-              <div id="UsernameHelp" class="form-text">We'll never share your username with anyone else.</div>
-            </div> <!-- End mb-3 -->
-            <div class="mb-3">
-              <label for="password" class="form-label">Password</label>
-              <input type="password" class="form-control" id="password" name="password">
-            </div> <!-- End mb-3 -->
-          {% else %}
-            <div class="input-group mb-3">
-              <label class="input-group-text" for="inputGroupSelect01">Choose Spatial Feature:</label>
-              <select name = "inputGroupSelect01" class="form-select" id="inputGroupSelect01">
-                <option selected>Choose...</option>
-                {% for feature in spatial_var[0] %}
-                  <option value="{{ feature }}">{{ feature }}</option>
-                {% endfor %}
-              </select>
+          {% if not show_drop_down %} <!-- Show Username and Password Fields for 1st call of APIs -->
+            <div class="border bg-light border-danger rounded">
+              <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" aria-describedby="username" name="username">
+                <div id="UsernameHelp" class="form-text">We'll never share your username with anyone else.</div>
+              </div> <!-- End mb-3 -->
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password">
+              </div> <!-- End mb-3 -->
+            </div>
+          {% else %} <!-- Show the submit button when APIs have not been called yet successfully -->
+            <div class="border bg-light border-danger rounded">
+              <div class="input-group mb-3">
+                <label class="input-group-text" for="inputGroupSelect01">Choose Spatial Feature:</label>
+                <select name = "inputGroupSelect01" class="form-select" id="inputGroupSelect01">
+                  <option selected>Choose...</option>
+                  {% for feature in spatial_var[0] %}
+                    <option value="{{ feature }}">{{ feature }}</option>
+                  {% endfor %}
+                </select>
+              </div>
             </div>
           {% endif %}
-          <button type="submit" class="btn btn-primary">Submit</button> <!-- End button -->
         </div> <!-- End col4 2 -->
-      </div> <!-- End row 2 -->
+      </div> <!-- End row 3 for content of the 2 columns -->
+      <div class="row justify-content-center"> <!-- Row 4 Start -->
+        <div class="col-4 p-3 border bg-light"> <!-- Col 4 1 Start -->
+            <div class="border bg-light border-danger rounded">
+              {% if not show_drop_down %}
+                <button name="call_1st_APIs" type="submit" class="btn btn-primary m-3">Call 1st set of APIs</button> <!-- Call 1st APIs -->
+              {% else %}
+                <button name="call_2nd_APIs" type="submit" class="btn btn-primary m-3">Call 2nd set of APIs</button> <!-- Call 2nd APIs -->
+              {% endif %}
+            </div>
+        </div> <!-- col4 1  -->
+      </div> <!-- End Row 4  -->
 
       {% if show_drop_down  %}
         <div class="row">

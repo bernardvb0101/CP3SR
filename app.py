@@ -67,9 +67,9 @@ def home():
 
             # Populate the entity name for use in the report
             keep_track = 0  # temp variable to enable 'org_choice' variable to match 'entity_choice'
-            for entityname in entityname_list:
-                if url_choice.split(sep=".", maxsplit=10)[1] in entityname:
-                    entity_choice = entityname
+            for url_option in url_list:
+                if url_option == url_choice:
+                    entity_choice = entityname_list[keep_track]
                     org_choice = org_list[keep_track]
                     break
                 keep_track += 1
@@ -214,24 +214,14 @@ def home():
                 # Thus, create a dataframe/dataframes containing all the spatial feautures selected, each containing the
                 # number of projects in that feature and the capital demand per that feature
                 # Decide on the number of data sets depending on the size of the data
-                if SpatialFeatureChoice[-1].lower() != "s":
-                    SpatialFeatureChoice = f"{SpatialFeatureChoice}s"
-                # 1st just do this - it helps the data headings read better
-                if SpatialFeatureChoice[-1].lower() == 's':
-                    column_values = SpatialFeatureChoice[:-1]
-                else:
-                    column_values = SpatialFeatureChoice
 
                 # 1st Create Dataset of all the data to split up for grpahing purposes
                 df_EntireSet = pd.DataFrame(
-                    {SpatialFeatureChoice: list_of_features, f'Projects per {column_values}': list_nr,
-                     f'Capital Demand': list_cost})
-                # Now sort the dataset in order of number of projects from largest to smallest
-                df_EntireSet.sort_values(f'Projects per {column_values}', inplace=True, ascending=True)
-                """
-                df_EntireSet = pd.DataFrame(
                     {SpatialFeatureChoice: list_of_features, f'Projects per {SpatialFeatureChoice}': list_nr,
                      f'Capital Demand': list_cost})
+                # Now sort the dataset in order of number of projects from largest to smallest
+                df_EntireSet.sort_values(f'Projects per {SpatialFeatureChoice}', inplace=True, ascending=True)
+                """
                 df_EntireSet looks like this: (df_subsets also!)
                     City of Tshwane Wards	Projects per City of Tshwane Wards	Capital Demand per City of Tshwane Wards
                 0	Ward 58	                85	                                5.605180e+08
@@ -239,7 +229,7 @@ def home():
                 ...
                 """
                 # The splitting of the df_EntireSet dataframe will happen below, depending on 'number_of_plots' variable
-
+                print(chosen_feature_qty)
                 if chosen_feature_qty <= 40:  # Only one dataset
                     number_of_plots = 1
                     df_subset1 = df_EntireSet

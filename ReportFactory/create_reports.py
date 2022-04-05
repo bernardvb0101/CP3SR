@@ -95,14 +95,6 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     url_choice = var_dict['url_choice']
     entity_choice = var_dict['entity_choice']
     SpatialFeatureChoice = var_dict['SpatialFeatureChoice']
-    # Add an "s" for plural if it is not there in the word for spatial features. It reads better in the report.
-    if SpatialFeatureChoice[-1].lower() != "s":
-        SpatialFeatureChoice = f"{SpatialFeatureChoice}s"
-    # This is required for the sake of the graphs axis titles to read right, not necessary but it just reads better
-    if SpatialFeatureChoice[-1].lower()=='s':
-        x_axis_values = SpatialFeatureChoice[:-1]
-    else:
-        x_axis_values = SpatialFeatureChoice
     Layer_List = var_dict['Layer_List']
     total_datapoints = var_dict['total_datapoints']
     intersecting = var_dict['intersecting']
@@ -120,20 +112,20 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     print(df_EntireSet.head())
 
     # Create variables about the projects
-    maximum_projects = df_EntireSet[f'Projects per {x_axis_values}'].max()
-    maximum_projects_feature = df_EntireSet.loc[df_EntireSet[f'Projects per {x_axis_values}'] == df_EntireSet[
-        f'Projects per {x_axis_values}'].max(), f'{SpatialFeatureChoice}'].iloc[0]
-    minimum_projects = df_EntireSet[f'Projects per {x_axis_values}'].min()
-    minimum_projects_feature = df_EntireSet.loc[df_EntireSet[f'Projects per {x_axis_values}'] == df_EntireSet[
-        f'Projects per {x_axis_values}'].min(), f'{SpatialFeatureChoice}'].iloc[0]
-    average_projects = df_EntireSet[f'Projects per {x_axis_values}'].mean()
-    seventy_fifth_projects = df_EntireSet[f'Projects per {x_axis_values}'].quantile(q=0.75)
-    sum_projects = df_EntireSet[f'Projects per {x_axis_values}'].sum()
+    maximum_projects = df_EntireSet[f'Projects per {SpatialFeatureChoice}'].max()
+    maximum_projects_feature = df_EntireSet.loc[df_EntireSet[f'Projects per {SpatialFeatureChoice}'] == df_EntireSet[
+        f'Projects per {SpatialFeatureChoice}'].max(), f'{SpatialFeatureChoice}'].iloc[0]
+    minimum_projects = df_EntireSet[f'Projects per {SpatialFeatureChoice}'].min()
+    minimum_projects_feature = df_EntireSet.loc[df_EntireSet[f'Projects per {SpatialFeatureChoice}'] == df_EntireSet[
+        f'Projects per {SpatialFeatureChoice}'].min(), f'{SpatialFeatureChoice}'].iloc[0]
+    average_projects = df_EntireSet[f'Projects per {SpatialFeatureChoice}'].mean()
+    seventy_fifth_projects = df_EntireSet[f'Projects per {SpatialFeatureChoice}'].quantile(q=0.75)
+    sum_projects = df_EntireSet[f'Projects per {SpatialFeatureChoice}'].sum()
     min_projects_perc_of_total = format_percent(minimum_projects/sum_projects)
     max_projects_perc_of_total = format_percent(maximum_projects/sum_projects)
     # Re-sort the df to get the top 5 wards with the most projects
-    df_EntireSet_Temp.sort_values(f'Projects per {x_axis_values}', inplace=True, ascending=True)
-    sum_top_five_projects = df_EntireSet_Temp[f'Projects per {x_axis_values}'].tail().sum()
+    df_EntireSet_Temp.sort_values(f'Projects per {SpatialFeatureChoice}', inplace=True, ascending=True)
+    sum_top_five_projects = df_EntireSet_Temp[f'Projects per {SpatialFeatureChoice}'].tail().sum()
     sum_top_five_projects_perc_of_total = format_percent(sum_top_five_projects/sum_projects)
 
 
@@ -332,7 +324,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
 
     match number_of_plots:
         case 1:
-                fig2_1 = px.bar(df_subset1, x=f'Projects per {x_axis_values}', y= SpatialFeatureChoice,
+                fig2_1 = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y= SpatialFeatureChoice,
                             color='Capital Demand',
                             height=900, orientation='h')
                 # Sort images to follow each other
@@ -345,10 +337,10 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 par_formatter(paragraphs6)
                 document.add_picture(f"./static/images/fig2_1.png", width=Cm(15))
         case 2:
-                fig2_1 = px.bar(df_subset1, x=f'Projects per {x_axis_values}', y=SpatialFeatureChoice,
+                fig2_1 = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
                             color='Capital Demand',
                             height=900, orientation='h')
-                fig2_2 = px.bar(df_subset2, x=f'Projects per {x_axis_values}', y=SpatialFeatureChoice,
+                fig2_2 = px.bar(df_subset2, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
                                 color='Capital Demand',
                                 height=900, orientation='h')
                 # Sort images to follow each other
@@ -368,13 +360,13 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 par_formatter(paragraphs7)
                 document.add_picture(f"./static/images/fig2_2.png", width=Cm(15))
         case 3:
-                fig2_1 = px.bar(df_subset1, x=f'Projects per {x_axis_values}', y=SpatialFeatureChoice,
+                fig2_1 = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
                             color='Capital Demand',
                             height=900, orientation='h')
-                fig2_2 = px.bar(df_subset2, x=f'Projects per {x_axis_values}', y=SpatialFeatureChoice,
+                fig2_2 = px.bar(df_subset2, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
                                 color='Capital Demand',
                                 height=900, orientation='h')
-                fig2_3 = px.bar(df_subset3, x=f'Projects per {x_axis_values}', y=SpatialFeatureChoice,
+                fig2_3 = px.bar(df_subset3, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
                                 color='Capital Demand',
                                 height=900, orientation='h')
                 # Sort images to follow each other
@@ -401,16 +393,16 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 par_formatter(paragraphs8)
                 document.add_picture(f"./static/images/fig2_3.png", width=Cm(15))
         case 4:
-                fig2_1 = px.bar(df_subset1, x=f'Projects per {x_axis_values}', y=SpatialFeatureChoice,
+                fig2_1 = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
                             color='Capital Demand',
                             height=900, orientation='h')
-                fig2_2 = px.bar(df_subset2, x=f'Projects per {x_axis_values}', y=SpatialFeatureChoice,
+                fig2_2 = px.bar(df_subset2, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
                                 color='Capital Demand',
                                 height=900, orientation='h')
-                fig2_3 = px.bar(df_subset3, x=f'Projects per {x_axis_values}', y=SpatialFeatureChoice,
+                fig2_3 = px.bar(df_subset3, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
                                 color='Capital Demand',
                                 height=900, orientation='h')
-                fig2_4 = px.bar(df_subset4, x=f'Projects per {x_axis_values}', y=SpatialFeatureChoice,
+                fig2_4 = px.bar(df_subset4, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
                                 color='Capital Demand',
                                 height=900)
                 # Sort images to follow each other
@@ -444,20 +436,6 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 par_formatter(paragraphs9)
                 document.add_picture(f"./static/images/fig2_4.png", width=Cm(15))
 
-
-
-
-
-
-    """
-    There is a total number of **`r chosen_feature_qty`** `r chosen_feature`. Each of the `r chosen_feature` has two 
-    important perspectives namely:`r br()`
-    - the number of  projects within each geographic area and;`r br()`
-    - the total capital demand per area.  `r br()`
-    These two perspectives are shown in the graphics below. The lengths of the bars shown depict the number of projects 
-    in `r chosen_feature`. The colour of each bar indicates the amount of capital requested within each of these areas
-     - the deeper red colours are indicative of higher capital demands.
-    """
 
     # Add a Page with General Information regarding the Municipality
     # document.add_heading(heading_1, level=1)
