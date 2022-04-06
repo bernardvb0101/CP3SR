@@ -3,6 +3,7 @@
 # Create a dataframe for the MapServiceIntersection data: "df_MapServiceIntersections"
 # *******************************************************************************************************
 # This is where the variable "chosen_feature" gets created and the type of layer you wish to display is entered
+import requests
 
 from CP3_API_calls.CP3_API_Classes import CP3Client_API
 
@@ -37,5 +38,12 @@ def MapServiceIntersectionCatalogue(username, password, grant_type, url_choice, 
     # You need to call the token again for this inherited class. The 1st token call was for the help API. This one is for the API call
     token2 = client2.get_API_token
     # Assign the returned API to a variable
-    MapServiceIntersections = client2.get_any_API
-    return MapServiceIntersections
+    try:
+        MapServiceIntersections = client2.get_any_API
+        return MapServiceIntersections
+    except requests.exceptions.JSONDecodeError:  # Picked up this error at Lekwa...
+        MapServiceIntersections = {}
+        return MapServiceIntersections
+
+
+
