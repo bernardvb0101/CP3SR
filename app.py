@@ -162,22 +162,27 @@ def home():
                                        url_list=url_list, spatial_var=spatial_var,
                                        SpatialFeatureChoice=SpatialFeatureChoice)
 
-            elif button_2ndAPI is not None and nav_stage == 2: # Calling the 2nd set of APIs
+            elif button_2ndAPI is not None and (nav_stage == 2 or nav_stage ==3): # Calling the 2nd set of APIs
                 print(f"In 3rd if. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
                 SpatialFeatureChoice = request.form['inputGroupSelect01']
+                if SpatialFeatureChoice != "Choose...":  # User selected a spatial feature
 
-                # Call the MapServiceIntersectionCatalogue - it can only be called now that the preferred spatial
-                # feature is selected by the user (SpatialFeatureChoice).
-                df_MapServiceIntersections = pd.DataFrame(
-                    MapServiceIntersectionCatalogue(username, password, grant_type,
-                                                    url_choice, API_call_dict, layer_dict,
-                                                    SpatialFeatureChoice))
-                if df_MapServiceIntersections.empty:
-                    flash("Something went wrong with the MapServiceIntersectionsCatalogue API call.")
+                    print(f"SpatialFeatureChoice: {SpatialFeatureChoice}")
+
+                    # Call the MapServiceIntersectionCatalogue - it can only be called now that the preferred spatial
+                    # feature is selected by the user (SpatialFeatureChoice).
+                    df_MapServiceIntersections = pd.DataFrame(
+                        MapServiceIntersectionCatalogue(username, password, grant_type,
+                                                        url_choice, API_call_dict, layer_dict,
+                                                        SpatialFeatureChoice))
+                    if df_MapServiceIntersections.empty:
+                        flash("Something went wrong with the MapServiceIntersectionsCatalogue API call.")
+                    else:
+                        flash(f"Successfull API call on the {SpatialFeatureChoice} from the {org_choice} CP3 system.\n"
+                              f"You may now download a spatial feature report (MS Word) on {SpatialFeatureChoice}.")
+                        nav_stage = 3
                 else:
-                    flash(f"Successfull API call on the {SpatialFeatureChoice} from the {org_choice} CP3 system.\n"
-                          f"You may now download a spatial feature report (MS Word) on {SpatialFeatureChoice}.")
-                    nav_stage = 3
+                    flash("You need to select spatial feature.")
 
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
                                        url_list=url_list, spatial_var=spatial_var,
