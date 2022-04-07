@@ -83,10 +83,20 @@
               <div class="input-group mb-3">
                 <label class="input-group-text" for="inputGroupSelect01">Choose Spatial Feature:</label>
                 <select name = "inputGroupSelect01" class="form-select" id="inputGroupSelect01">
-                  <option selected>Choose...</option>
-                  {% for feature in spatial_var[0] %}
-                    <option value="{{ feature }}">{{ feature }}</option>
-                  {% endfor %}
+                  {% if nav_stage == 2 %}
+                    <option selected>Choose...</option>
+                    {% for feature in spatial_var[0] %}
+                        <option value="{{ feature }}">{{ feature }}</option>
+                    {% endfor %}
+                  {% elif nav_stage == 3 %}
+                      {% for feature in spatial_var[0] %}
+                        {% if feature == SpatialFeatureChoice %}
+                          <option value="SpatialFeatureChoice" selected>{{ SpatialFeatureChoice }}</option>
+                        {% else %}
+                          <option value="{{ feature }}">{{ feature }}</option>
+                        {% endif %}
+                      {% endfor %}
+                  {% endif %}
                 </select>
               </div>
             </div>
@@ -94,28 +104,24 @@
         </div> <!-- End col4 2 -->
       </div> <!-- End row 3 for content of the 2 columns -->
       <div class="row justify-content-center"> <!-- Row 4 Start -->
-        <div class="col-4 p-3 border bg-light"> <!-- Col 4 1 Start -->
-            <div class="border bg-light border-danger rounded">
+        <div class="col-8 p-3 border bg-light"> <!-- Col 4 1 Start -->
+            <div class="border bg-light border-danger rounded d-grid gap-2 col-6 mx-auto">
               {% if nav_stage == 1 %}
-                <button name="call_1st_APIs" type="submit" class="btn btn-primary m-3">Call 1st set of APIs</button> <!-- Call 1st APIs -->
-                <button name="call_2nd_APIs" type="submit" class="btn btn-primary m-3" disabled>Call 2nd set of APIs</button> <!-- Call 2nd APIs -->
-                <button name="download_report" type="submit" class="btn btn-primary m-3" disabled>Download Spatial Report</button> <!-- Download Spatial Report  -->
+                <button id="b1" name="call_1st_APIs" value="call_1st_APIs" type="submit" class="btn btn-primary m-3">1. Call CP3 variables</button> <!-- Call 1st APIs -->
+                <button id="b2" name="call_2nd_APIs" value="call_2nd_APIs" type="submit" class="btn btn-primary m-3" disabled>2. Call selected spatial feature variables</button> <!-- Call 2nd APIs -->
+                <button id="b3" name="download_report" value="download_report" type="submit" class="btn btn-primary m-3" disabled>3. Download Spatial Report</button> <!-- Download Spatial Report  -->
               {% elif nav_stage == 2 %}
-                <button name="call_1st_APIs" type="submit" class="btn btn-primary m-3">Select another site</button> <!-- Allow new URL selection  -->
-                <button name="call_2nd_APIs" type="submit" class="btn btn-primary m-3">Call 2nd set of APIs</button> <!-- Call 2nd APIs -->
-                <button name="download_report" type="submit" class="btn btn-primary m-3" disabled>Download Spatial Report</button> <!-- Download Spatial Report -->
+                <button id="b1" name="call_1st_APIs" value="call_1st_APIs" type="submit" class="btn btn-primary m-3">Select another site</button> <!-- Allow new URL selection  -->
+                <button id="b2" name="call_2nd_APIs" value="call_2nd_APIs" type="submit" class="btn btn-primary m-3">2. Call selected spatial feature variables</button> <!-- Call 2nd APIs -->
+                <button id="b3" name="download_report" value="download_report" type="submit" class="btn btn-primary m-3" disabled>3. Download Spatial Report</button> <!-- Download Spatial Report -->
               {% elif nav_stage ==3 %}
-
+                <button id="b1" name="call_1st_APIs" value="call_1st_APIs" type="submit" class="btn btn-primary m-3">Select another site</button> <!-- Allow new URL selection  -->
+                <button id="b2" name="call_2nd_APIs" value="call_2nd_APIs" type="submit" class="btn btn-primary m-3">2. Call selected spatial feature variables</button> <!-- Call 2nd APIs -->
+                <button id="b3" name="download_report" value="download_report" type="submit" class="btn btn-primary m-3">3. Download Spatial Report</button> <!-- Download Spatial Report -->
               {% endif %}
             </div>
         </div> <!-- col4 1  -->
       </div> <!-- End Row 4  -->
-
-      {% if show_drop_down  %}
-        <div class="row">
-
-        </div> <!-- End row 3 -->
-      {% endif %}
 
     </form> <!-- End form -->
 
@@ -126,7 +132,7 @@
     <div class="row">
         <ul class=flashes>
         {% for message in messages %}
-            <p class="text-center" style="color:#EB0E0E"><br>{{ message }}</p>
+            <p class="text-center" style="color:#0e0eeb"><br>{{ message }}</p>
         {% endfor %}
         </ul>
     </div>

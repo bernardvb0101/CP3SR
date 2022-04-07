@@ -26,6 +26,7 @@ json_file_ok = returned_combined_list[0][0]
 show_drop_down = False
 nav_stage = 1
 all_well = 0
+SpatialFeatureChoice = ""
 if json_file_ok:
     org_choice = org_list[0]  # Make the 1st one in the list the default
     url_choice = url_list[0]  # Make the 1st one in the list the default
@@ -54,7 +55,7 @@ def home():
     global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2, sys_username
 
     if json_file_ok:
-        if request.method == 'POST' and not show_drop_down:  # Step 1: Pressed the submit button with username and pw, no dropdown yet
+        if request.method == 'POST':  # Step 1: Pressed the submit button with username and pw, no dropdown yet
 
             # Get the status of the buttons that were pressed
             button_1stAPI = request.form.get("call_1st_APIs")
@@ -62,6 +63,7 @@ def home():
             button_dlreport = request.form.get("download_report")
 
             if button_1stAPI is not None and nav_stage == 1:  # Pressed the button to call an API
+                print(f"In 1st if. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
                 # The all_well variable is zero if no APIs were returned successfully yet
                 all_well = 0
                 # The spatial_var is a list with the spatial feautures that the user cna select from later on
@@ -150,14 +152,18 @@ def home():
                 # If nav_stage is 2, the user would be able to call the 2nd APIs, otherwise he will just get a fault
                 # message and stay on the page with the url choices and username and password
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var)
+                                       url_list=url_list, spatial_var=spatial_var,
+                                       SpatialFeatureChoice=SpatialFeatureChoice)
 
             elif button_1stAPI is not None and nav_stage == 2:  # Pressed the button to select a another site
+                print(f"In 2nd if. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
                 nav_stage = 1
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var)
+                                       url_list=url_list, spatial_var=spatial_var,
+                                       SpatialFeatureChoice=SpatialFeatureChoice)
 
             elif button_2ndAPI is not None and nav_stage == 2: # Calling the 2nd set of APIs
+                print(f"In 3rd if. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
                 SpatialFeatureChoice = request.form['inputGroupSelect01']
 
                 # Call the MapServiceIntersectionCatalogue - it can only be called now that the preferred spatial
@@ -174,9 +180,11 @@ def home():
                     nav_stage = 3
 
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var)
+                                       url_list=url_list, spatial_var=spatial_var,
+                                       SpatialFeatureChoice=SpatialFeatureChoice)
 
             elif button_dlreport is not None and nav_stage == 3:  # Calling the 2nd set of APIs
+                print(f"In 4th if. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
                 # All APIs have now been called so the report building can proceed
                 # Change the FeatureClassName column to "category" type
                 df_MapServiceIntersections['FeatureClassName'].astype("category")
@@ -307,6 +315,7 @@ def home():
                     var_dict['no_intersects'] = no_intersects
                     var_dict['chosen_feature_qty'] = chosen_feature_qty
 
+                    nav_stage = 2  # To allow the user to once more select a field
                     # Check the growth of files and reduce it
                     control_growth_of_docx()
                     # Now create the spatial feature report
@@ -321,14 +330,21 @@ def home():
                     flash(f"There is no spatial intersect on {SpatialFeatureChoice}. A spatial feature report can "
                           f"therefore not be generated.")
                     return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                           url_list=url_list, spatial_var=spatial_var)
+                                           url_list=url_list, spatial_var=spatial_var,
+                                           SpatialFeatureChoice=SpatialFeatureChoice)
+
+        else:  # Get not Post, in other words when it lands
+            print(f"In GET. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
+            return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
+                                   url_list=url_list, spatial_var=spatial_var,
+                                   SpatialFeatureChoice=SpatialFeatureChoice)
 
     else:  # json_file_ok == False
         if request.method == 'GET':
             flash(returned_combined_list[0][1])
-            # If all the API's were called successfully, show the DropDown
         return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                   url_list=url_list, spatial_var=spatial_var)
+                               url_list=url_list, spatial_var=spatial_var,
+                               SpatialFeatureChoice=SpatialFeatureChoice)
 
 
 # This is required for the programme to run
