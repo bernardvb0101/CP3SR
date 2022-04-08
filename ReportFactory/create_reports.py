@@ -1,5 +1,7 @@
 # import os
 import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from docx import Document
 from docx.shared import Cm
 # from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -140,6 +142,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     df_EntireSet_Temp.sort_values(f'Projects per {SpatialFeatureChoice}', inplace=True, ascending=True)
     sum_top_five_projects = df_EntireSet_Temp[f'Projects per {SpatialFeatureChoice}'].tail().sum()
     sum_top_five_projects_perc_of_total = format_percent(sum_top_five_projects/sum_projects)
+    top_five_projfeat_text = " and".join(", ".join(df_EntireSet_Temp[f'{SpatialFeatureChoice}'].tail().tolist()).rsplit(',',1))
 
 
     # Create variables about the costs
@@ -168,6 +171,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     sum_top_five_cost = format_budget(sum_top_five_cost_float)
     sum_top_five_cost_perc_of_total_float = sum_top_five_cost_float/sum_cost_float
     sum_top_five_cost_perc_of_total = format_percent(sum_top_five_cost_perc_of_total_float)
+    top_five_capfeat_text = " and".join(", ".join(df_EntireSet_Temp[f'{SpatialFeatureChoice}'].tail().tolist()).rsplit(',',1))
 
 
     # This provides the location of the template word file
@@ -313,23 +317,47 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         paragraphs5['15 xx'] = f"The 5 {SpatialFeatureChoice} with the most projects have a combined total of " \
                                f"{sum_top_five_projects} projects. This accounts for {sum_top_five_projects_perc_of_total}" \
                                f" of the total number of projects."
+        paragraphs5['16 xx'] = f"The top 5 {SpatialFeatureChoice} in terms of number of projects are {top_five_projfeat_text}."
+
     # ********** Captial demand per feature **********
-    paragraphs5['16 al'] = f"\nThe following information relates to the capital demand in {SpatialFeatureChoice}:"
-    paragraphs5['17 xx'] = f"{maximum_cost_feature} has the highest capital demand: {maximum_cost} " \
+    paragraphs5['17 al'] = f"\nThe following information relates to the capital demand in {SpatialFeatureChoice}:"
+    paragraphs5['18 xx'] = f"{maximum_cost_feature} has the highest capital demand: {maximum_cost} " \
                            f"({max_cost_perc_of_total} of total capital demand);"
-    paragraphs5['18 xx'] = f"{minimum_cost_feature} has the lowest capital demand: {minimum_cost} " \
+    paragraphs5['19 xx'] = f"{minimum_cost_feature} has the lowest capital demand: {minimum_cost} " \
                            f"({min_cost_perc_of_total} of total capital demand);"
-    paragraphs5['19 xx'] = f"The average capital demand per {SpatialFeatureChoice} is {average_cost};"
-    paragraphs5['20 xx'] = f"The 75th percentile of capital demand per {SpatialFeatureChoice} is {seventy_fifth_cost}."
-    paragraphs5['21 xx'] = f"The total capital demand in all {SpatialFeatureChoice} is {sum_cost};"
+    paragraphs5['20 xx'] = f"The average capital demand per {SpatialFeatureChoice} is {average_cost};"
+    paragraphs5['21 xx'] = f"The 75th percentile of capital demand per {SpatialFeatureChoice} is {seventy_fifth_cost}."
+    paragraphs5['22 xx'] = f"The total capital demand in all {SpatialFeatureChoice} is {sum_cost};"
     if chosen_feature_qty > 10:
-        paragraphs5['22 xx'] = f"The 5 {SpatialFeatureChoice} with the highest capital demand have a combined total of " \
+        paragraphs5['23 xx'] = f"The 5 {SpatialFeatureChoice} with the highest capital demand have a combined total of " \
                                f"{sum_top_five_cost}. This accounts for {sum_top_five_cost_perc_of_total}" \
                                f" of the total capital demand."
-
+        paragraphs5['24 xx'] = f"The top 5 {SpatialFeatureChoice} in terms of Capital Demand are {top_five_capfeat_text}."
+    paragraphs5['25 cp'] = f"Figure {fig_nr}: The top 5 {SpatialFeatureChoice} vs the rest"
 
     head_formatter(headings2)
     par_formatter(paragraphs5)
+
+    colors = ['red', 'green']
+    labels = ["Top 5", "The Rest"]
+
+    # Create subplots: use 'domain' type for Pie subplot
+    fig[fig_nr] = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
+    fig[fig_nr].add_trace(go.Pie(labels=labels, values=[sum_top_five_projects, (sum_projects - sum_top_five_projects)],
+                                 name="Nr of Projs"), 1, 1)
+    fig[fig_nr].add_trace(
+        go.Pie(labels=labels, values=[sum_top_five_cost_float, (sum_cost_float - sum_top_five_cost_float)],
+               name="Capital Demand"), 1, 2)
+    # Use `hole` to create a donut-like pie chart
+    fig[fig_nr].update_traces(hole=.4)
+    fig[fig_nr].update_traces(marker=dict(colors=colors, line=dict(color='#000000', width=2)))
+    fig[fig_nr].update_layout(annotations=[dict(text='Nr of Projs', x=0.18, y=0.5, font_size=10, showarrow=False),
+                                           dict(text='Capital Demand', x=0.82, y=0.5, font_size=10, showarrow=False)])
+
+    fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
+    document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(17))
+    fig_nr += 1
+
 
     paragraphs6 ={}
     paragraphs7 = {}
