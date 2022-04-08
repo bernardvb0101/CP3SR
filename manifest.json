@@ -1,0 +1,207 @@
+{
+  "version": 1,
+  "metadata": {
+    "appmode": "python-api",
+    "entrypoint": "app"
+  },
+  "locale": ".UTF-8",
+  "python": {
+    "version": "3.7.6",
+    "package_manager": {
+      "name": "pip",
+      "version": "21.2.2",
+      "package_file": "requirements.txt"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "6cf88f42a8269be08df0e5fb1810713c"
+    },
+    ".DS_Store": {
+      "checksum": "0bfbbd8c3543fd7e617b14654440978a"
+    },
+    ".gitignore": {
+      "checksum": "049466f4e11c132193dc9535fe88bc47"
+    },
+    ".idea/.gitignore": {
+      "checksum": "bd588a782a4fe62c25b44342c8dbb173"
+    },
+    ".idea/CP3SR.iml": {
+      "checksum": "746712ec47cdba5a5a256e980847b0bb"
+    },
+    ".idea/inspectionProfiles/Project_Default.xml": {
+      "checksum": "c37acde65cec9cbe5d336099eb89a6af"
+    },
+    ".idea/inspectionProfiles/profiles_settings.xml": {
+      "checksum": "05dbe611f5bdb7a801adb3f064d4bfa9"
+    },
+    ".idea/misc.xml": {
+      "checksum": "b41669913897bb2af6e7b5a7ef7280e9"
+    },
+    ".idea/modules.xml": {
+      "checksum": "3128f49309ae556a7ca846eaf4dbf8bc"
+    },
+    ".idea/vcs.xml": {
+      "checksum": "4398a0e85aadccccdac25003959bc326"
+    },
+    ".idea/workspace.xml": {
+      "checksum": "1c7866d5bd10307782ac7c4d36a09693"
+    },
+    "CP3_API_calls/BaselineCatalogue.py": {
+      "checksum": "0a529b9c4ae7573fa293196cda7d9073"
+    },
+    "CP3_API_calls/CP3_API_Classes.py": {
+      "checksum": "7fdde368e5bd5dceaa78f5dbbdad7984"
+    },
+    "CP3_API_calls/CP3_API_scaffolding.py": {
+      "checksum": "8dc60de45534e96853035ebcc906999b"
+    },
+    "CP3_API_calls/CapexDemandCatalogue.py": {
+      "checksum": "44930f6fb5e09fa1caa6fade8de191d8"
+    },
+    "CP3_API_calls/Create_API_Variables.py": {
+      "checksum": "5080384b5755ea99e8b88003501fc35e"
+    },
+    "CP3_API_calls/MapServiceIntersectionCatalogue.py": {
+      "checksum": "e50ae947238c27f0a3a1e2ba5e2f58fd"
+    },
+    "CP3_API_calls/MapServiceLayersCatalogue.py": {
+      "checksum": "3178435709563d2c6b259ff11a0d3ff9"
+    },
+    "CP3_API_calls/ProjectCatalogue.py": {
+      "checksum": "71963bb9c4081855e7f41826aea85cf9"
+    },
+    "CP3_API_calls/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "CP3_API_calls/__pycache__/BaselineCatalogue.cpython-310.pyc": {
+      "checksum": "f1348f1a968d172e50bc8c82473af047"
+    },
+    "CP3_API_calls/__pycache__/CP3_API_Classes.cpython-310.pyc": {
+      "checksum": "b6a4ec6aa5df03aaa976cd5f05dcb9d2"
+    },
+    "CP3_API_calls/__pycache__/CP3_API_scaffolding.cpython-310.pyc": {
+      "checksum": "463bfe5f17c6ef67ee143e1db992ece6"
+    },
+    "CP3_API_calls/__pycache__/CapexDemandCatalogue.cpython-310.pyc": {
+      "checksum": "ad85f379467295a7334f0f9595d4dc8f"
+    },
+    "CP3_API_calls/__pycache__/Create_API_Variables.cpython-310.pyc": {
+      "checksum": "ebbcbd61fd46c2d3508e13c07a6aff35"
+    },
+    "CP3_API_calls/__pycache__/MapServiceIntersectionCatalogue.cpython-310.pyc": {
+      "checksum": "2d275b1525e4a7f2b2b2ac95abb8e6d5"
+    },
+    "CP3_API_calls/__pycache__/MapServiceLayersCatalogue.cpython-310.pyc": {
+      "checksum": "aa799d72f734a630f537d2c38b9f74e3"
+    },
+    "CP3_API_calls/__pycache__/ProjectCatalogue.cpython-310.pyc": {
+      "checksum": "8a48bc672196a5f482c8dc9dcdbc068d"
+    },
+    "CP3_API_calls/__pycache__/__init__.cpython-310.pyc": {
+      "checksum": "d18ec7581ed7e7f87cd729a9cabd12f5"
+    },
+    "DOWNLOAD_FOLDER/Tshwane_SpatialRep_2022-04-08-08_54.docx": {
+      "checksum": "af33461e23ed287084ec0717e5b267d2"
+    },
+    "README.md": {
+      "checksum": "ad612dbd1de41ca1558864a756ca5faf"
+    },
+    "ReportFactory/Master.docx": {
+      "checksum": "b717d5e1b3089c56377adb9ec6052c0f"
+    },
+    "ReportFactory/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "ReportFactory/__pycache__/__init__.cpython-310.pyc": {
+      "checksum": "818b298714e801f28b278973b4b540fd"
+    },
+    "ReportFactory/__pycache__/create_reports.cpython-310.pyc": {
+      "checksum": "efe17492184d4b8c1c03fc8b0a94ce73"
+    },
+    "ReportFactory/create_reports.py": {
+      "checksum": "b8a4e156c90cb06edc844c28469736ab"
+    },
+    "Utilities/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "Utilities/__pycache__/__init__.cpython-310.pyc": {
+      "checksum": "c662309f95c765618482ab2b5af31dd2"
+    },
+    "Utilities/__pycache__/control_growth.cpython-310.pyc": {
+      "checksum": "169fa159eb8cbdb556c7769873d89fa8"
+    },
+    "Utilities/__pycache__/file_exists.cpython-310.pyc": {
+      "checksum": "fd6351b8712c935ad4d30ff5cde49706"
+    },
+    "Utilities/__pycache__/get_url_vars.cpython-310.pyc": {
+      "checksum": "fc38f5ab2f2f61df3f39173a16a5e0d1"
+    },
+    "Utilities/__pycache__/url_exists.cpython-310.pyc": {
+      "checksum": "e92ae786c4c49d693bf720f8a922f0bb"
+    },
+    "Utilities/control_growth.py": {
+      "checksum": "b2004d900627591b8613c927eb5057b1"
+    },
+    "Utilities/file_exists.py": {
+      "checksum": "44568215bfb752455bc90cb7024b9df8"
+    },
+    "Utilities/get_url_vars.py": {
+      "checksum": "e5604a86da7e35c9c2d20fa102350b52"
+    },
+    "Utilities/url_exists.py": {
+      "checksum": "5565ec01d73cac587345ff2b634a95a8"
+    },
+    "Variables/.DS_Store": {
+      "checksum": "194577a7e20bdcc7afbb718f502c134c"
+    },
+    "Variables/CP3_deployments.json": {
+      "checksum": "9cfb78e0e299d8c1113a9ddd3a1f78c1"
+    },
+    "Variables/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "app.py": {
+      "checksum": "b7de6e909394ac838cd9fa57589c595b"
+    },
+    "static/.DS_Store": {
+      "checksum": "81c7b110dc744add1c8adfe8d840f168"
+    },
+    "static/images/CP3logo.png": {
+      "checksum": "627e083b19aa92ceac8942ee427ca25e"
+    },
+    "static/images/fig1.png": {
+      "checksum": "9d868a2fc547cd725cbe1107beb3e47f"
+    },
+    "static/images/fig2.1.png": {
+      "checksum": "9047307207df60e2fd13a8c6a9ef088e"
+    },
+    "static/images/fig2.2.png": {
+      "checksum": "9ccdee743d81823329f0ff01d824268f"
+    },
+    "static/images/fig2.3.png": {
+      "checksum": "d7112409bd41ee3f9428028c833e5a10"
+    },
+    "static/images/fig2.4.png": {
+      "checksum": "d792119f838d5b311b63c53c996bfb9d"
+    },
+    "static/images/fig2.png": {
+      "checksum": "086d72c8d80c09546a046c29f443b2c1"
+    },
+    "static/images/fig2_1.png": {
+      "checksum": "086d72c8d80c09546a046c29f443b2c1"
+    },
+    "static/images/fig2_2.png": {
+      "checksum": "6cdcf13e44205e756919fc643045ea25"
+    },
+    "static/images/fig2_3.png": {
+      "checksum": "05fc2d50fb699f9f0b5fcbdfa0a47231"
+    },
+    "static/images/fig2_4.png": {
+      "checksum": "8c50d29a92e3000f370e0fdc7b119259"
+    },
+    "templates/home.html": {
+      "checksum": "2fc565863302a16de08d80fe8c748852"
+    }
+  }
+}

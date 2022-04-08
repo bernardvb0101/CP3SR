@@ -58,6 +58,17 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
          This function within a function formats headings using the heading levels as input.
         """
         for key, value in headings.items():
+            if key == "0":
+                    document.add_heading(value, level=0)
+            elif key == "1":
+                    document.add_heading(value, level=1)
+            elif key == "2":
+                    document.add_heading(value, level=2)
+            elif key == "3":
+                    document.add_heading(value, level=3)
+            elif key == "4":
+                    document.add_heading(value, level=4)
+            """
             match key:
                 case "0":
                     document.add_heading(value, level=0)
@@ -69,6 +80,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                     document.add_heading(value, level=3)
                 case "4":
                     document.add_heading(value, level=4)
+            """
 
 
     # Put an R in front of the currency and format the amount
@@ -325,8 +337,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     paragraphs9 = {}
 
 
-    match number_of_plots:
-        case 1:
+    if number_of_plots == 1:
                 fig[fig_nr] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y= SpatialFeatureChoice,
                             color='Capital Demand',
                             height=900, orientation='h')
@@ -339,7 +350,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 paragraphs6['1 cp'] = f"Figure {fig_nr}: Projects and Capital Demand per {SpatialFeatureChoice}"
                 par_formatter(paragraphs6)
                 document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(15))
-        case 2:
+    elif number_of_plots == 2:
                 temp_fig_nr1 = f"{fig_nr}.1"
                 temp_fig_nr2 = f"{fig_nr}.2"
                 fig[temp_fig_nr1] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
@@ -364,7 +375,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 paragraphs7['1 cp'] = f"Figure {temp_fig_nr2}: Projects and Capital Demand per {SpatialFeatureChoice} (2/2)"
                 par_formatter(paragraphs7)
                 document.add_picture(f"./static/images/fig{temp_fig_nr2}.png", width=Cm(15))
-        case 3:
+    elif number_of_plots == 3:
                 temp_fig_nr1 = f"{fig_nr}.1"
                 temp_fig_nr2 = f"{fig_nr}.2"
                 temp_fig_nr3 = f"{fig_nr}.3"
@@ -400,7 +411,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 paragraphs8['1 cp'] = f"Figure {temp_fig_nr3}: Projects and Capital Demand per {SpatialFeatureChoice} (3/3)"
                 par_formatter(paragraphs8)
                 document.add_picture(f"./static/images/fig{temp_fig_nr3}.png", width=Cm(15))
-        case 4:
+    elif number_of_plots == 4:
                 temp_fig_nr1 = f"{fig_nr}.1"
                 temp_fig_nr2 = f"{fig_nr}.2"
                 temp_fig_nr3 = f"{fig_nr}.3"

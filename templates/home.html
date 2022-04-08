@@ -18,30 +18,25 @@
     <div class="col-md-auto">
       <p class="h1">CP3 Spatial Report</p>
     </div>
-  </div>
+  </div> <!-- End row 1 -->
 </div> <!-- End div container 1 -->
 
 <div class="container"> <!-- Container 2 for URLs and inputs fields -->
 
-    <form action="/" method="POST">
-      <div class="row justify-content-center">  <!--Row 2 start for the headings of the 2 columns -->
-        <div class="col-4 p-3 border bg-light">
+    <form action="{{ url_for('home') }}" method="POST">
+
+      <div class="row justify-content-center">  <!--Row 2 Heading for URL list / chosen URL -->
+        <div class="col-5 p-3 border bg-light">
           {% if nav_stage == 1 %}
             <div class="p-3 border bg-light border-danger rounded fs-2">Available URLs</div> <!-- End Avail URLs border -->
           {% elif nav_stage == 2 or nav_stage == 3 %}
-            <div class="p-3 border bg-light border-danger rounded fs-2">Chosen URL</div> <!-- End Avail URLs border -->
-          {% endif %}
-        </div> <!-- End col4 1 -->
-          <div class="col-4 p-3 border bg-light">
-          {% if nav_stage == 1 %}
-            <div class="p-3 border bg-light border-danger rounded fs-2">API Credentials</div> <!-- End Avail URLs border -->
-          {% elif nav_stage == 2 or nav_stage == 3 %}
             <div class="p-3 border bg-light border-danger rounded fs-2">Spatial Feature Choices</div> <!-- End Avail URLs border -->
           {% endif %}
-        </div> <!-- End col4 2 -->
-      </div> <!-- End row 1 -->
-      <div class="row justify-content-center"> <!--Row 3 start for the content of the 2 columns -->
-        <div class="col-4 p-3 border bg-light">
+        </div> <!-- End col -->
+      </div> <!-- End row 2 -->
+
+      <div class="row justify-content-center"> <!--Row 3 URL list / chosen URL -->
+        <div class="col-5 p-3 border bg-light">
             <div class="border bg-light border-danger rounded">
               {% if nav_stage == 1 %} <!-- Show enabled URLs for user to make a choice -->
                 {% for url in url_list %}
@@ -54,75 +49,54 @@
                     <label class="form-check-label" for="{{ url }}">
                       {{ url }}
                     </label>
-                  </div> <!-- End form check  -->
+                  </div>
                 {% endfor %}
-              {% else %} <!-- Show chosen URL only when choice was made -->
-                <div class="form-check p-3 ms-3">
-                  <input class="form-check-input" type="radio" name="flexRadioDefault" id="{{ url_choice }}" value="{{ url_choice }}" checked disabled>
-                  <label class="form-check-label" for="{{ url_choice }}">
-                    {{ url_choice }}
-                  </label>
-                </div> <!-- End form check  -->
+              {% else %}
+                <div class="border bg-light border-danger rounded p-3">
+                  <div class="input-group mb-3">
+                    <label class="input-group-text" for="inputGroupSelect01">Choose Spatial Feature:</label>
+                    <select name = "inputGroupSelect01" class="form-select" id="inputGroupSelect01">
+                      {% if nav_stage == 2 and SpatialFeatureChoice == "" %}
+                        <option selected>Choose...</option>
+                        {% for feature in spatial_var[0] %}
+                            <option value="{{ feature }}">{{ feature }}</option>
+                        {% endfor %}
+                      {% elif (nav_stage == 3) or (nav_stage == 2 and SpatialFeatureChoice != "") %}
+                          {% for feature in spatial_var[0] %}
+                            {% if feature == SpatialFeatureChoice %}
+                              <option value="{{ SpatialFeatureChoice }}" selected>{{ SpatialFeatureChoice }}</option>
+                            {% else %}
+                              <option value="{{ feature }}">{{ feature }}</option>
+                            {% endif %}
+                          {% endfor %}
+                      {% endif %}
+                    </select>
+                  </div>
+                </div>
               {% endif %}
             </div> <!-- End radios border -->
         </div> <!-- End column-->
-        <div class="col-4 p-3 border bg-light">
-          {% if nav_stage == 1 %} <!-- Show Username and Password Fields for 1st call of APIs -->
-            <div class="border bg-light border-danger rounded p-3">
-              <div class="m-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" aria-describedby="username" name="username">
-              </div> <!-- End mb-3 -->
-              <div class="m-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password">
-              </div> <!-- End mb-3 -->
-            </div>
-          {% else %} <!-- Show the submit button when APIs have not been called yet successfully -->
-            <div class="border bg-light border-danger rounded p-3">
-              <div class="input-group mb-3">
-                <label class="input-group-text" for="inputGroupSelect01">Choose Spatial Feature:</label>
-                <select name = "inputGroupSelect01" class="form-select" id="inputGroupSelect01">
-                  {% if nav_stage == 2 %}
-                    <option selected>Choose...</option>
-                    {% for feature in spatial_var[0] %}
-                        <option value="{{ feature }}">{{ feature }}</option>
-                    {% endfor %}
-                  {% elif nav_stage == 3 %}
-                      {% for feature in spatial_var[0] %}
-                        {% if feature == SpatialFeatureChoice %}
-                          <option value="SpatialFeatureChoice" selected>{{ SpatialFeatureChoice }}</option>
-                        {% else %}
-                          <option value="{{ feature }}">{{ feature }}</option>
-                        {% endif %}
-                      {% endfor %}
-                  {% endif %}
-                </select>
-              </div>
-            </div>
-          {% endif %}
-        </div> <!-- End col4 2 -->
-      </div> <!-- End row 3 for content of the 2 columns -->
+      </div> <!-- End row 3 -->
+
       <div class="row justify-content-center"> <!-- Row 4 Start -->
-        <div class="col-8 p-3 border bg-light"> <!-- Col 4 1 Start -->
-            <div class="border bg-light border-danger rounded d-grid gap-2 col-6 mx-auto">
+        <div class="col-5 p-3 border bg-light"> <!-- Col 4 1 Start -->
+            <div class="border bg-light border-danger rounded d-grid gap-2 col-12 mx-auto">
               {% if nav_stage == 1 %}
-                <button id="b1" name="call_1st_APIs" value="call_1st_APIs" type="submit" class="btn btn-primary m-3">1. Call CP3 variables</button> <!-- Call 1st APIs -->
-                <button id="b2" name="call_2nd_APIs" value="call_2nd_APIs" type="submit" class="btn btn-primary m-3" disabled>2. Call selected spatial feature variables</button> <!-- Call 2nd APIs -->
-                <button id="b3" name="download_report" value="download_report" type="submit" class="btn btn-primary m-3" disabled>3. Download Spatial Report</button> <!-- Download Spatial Report  -->
+                <button id="b1" name="call_1st_APIs" value="call_1st_APIs" type="submit" class="btn btn-success m-3">1. Call CP3 variables</button> <!-- Call 1st APIs -->
+                <button id="b2" name="call_2nd_APIs" value="call_2nd_APIs" type="submit" class="btn btn-secondary m-3" disabled>2. Call selected spatial feature variables</button> <!-- Call 2nd APIs -->
+                <button id="b3" name="download_report" value="download_report" type="submit" class="btn btn-secondary m-3" disabled>3. Download Spatial Report</button> <!-- Download Spatial Report  -->
               {% elif nav_stage == 2 %}
-                <button id="b1" name="call_1st_APIs" value="call_1st_APIs" type="submit" class="btn btn-primary m-3">Select another site</button> <!-- Allow new URL selection  -->
-                <button id="b2" name="call_2nd_APIs" value="call_2nd_APIs" type="submit" class="btn btn-primary m-3">2. Call selected spatial feature variables</button> <!-- Call 2nd APIs -->
-                <button id="b3" name="download_report" value="download_report" type="submit" class="btn btn-primary m-3" disabled>3. Download Spatial Report</button> <!-- Download Spatial Report -->
+                <button id="b1" name="call_1st_APIs" value="call_1st_APIs" type="submit" class="btn btn-danger m-3">Select another site</button> <!-- Allow new URL selection  -->
+                <button id="b2" name="call_2nd_APIs" value="call_2nd_APIs" type="submit" class="btn btn-success m-3">1. Call selected spatial feature variables</button> <!-- Call 2nd APIs -->
+                <button id="b3" name="download_report" value="download_report" type="submit" class="btn btn-secondary m-3" disabled>2. Download Spatial Report</button> <!-- Download Spatial Report -->
               {% elif nav_stage ==3 %}
-                <button id="b1" name="call_1st_APIs" value="call_1st_APIs" type="submit" class="btn btn-primary m-3">Select another site</button> <!-- Allow new URL selection  -->
-                <button id="b2" name="call_2nd_APIs" value="call_2nd_APIs" type="submit" class="btn btn-primary m-3">2. Call selected spatial feature variables</button> <!-- Call 2nd APIs -->
-                <button id="b3" name="download_report" value="download_report" type="submit" class="btn btn-primary m-3">3. Download Spatial Report</button> <!-- Download Spatial Report -->
+                <button id="b1" name="call_1st_APIs" value="call_1st_APIs" type="submit" class="btn btn-danger m-3">Select another site</button> <!-- Allow new URL selection  -->
+                <button id="b2" name="call_2nd_APIs" value="call_2nd_APIs" type="submit" class="btn btn-danger m-3">Call another spatial feature's variables</button> <!-- Call 2nd APIs -->
+                <button id="b3" name="download_report" value="download_report" type="submit" class="btn btn-success m-3">1. Download Spatial Report</button> <!-- Download Spatial Report -->
               {% endif %}
             </div>
         </div> <!-- col4 1  -->
       </div> <!-- End Row 4  -->
-
     </form> <!-- End form -->
 
 </div> <!-- End div container 2 -->

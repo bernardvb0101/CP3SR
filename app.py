@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, flash, send_file
-import os
 import pandas as pd
 import numpy as np
 from Utilities.url_exists import URL_exists
 from Utilities.control_growth import control_growth_of_docx
 from Utilities.get_url_vars import vars_from_json_file
+from Utilities.get_API_vars import API_vars_json_file
 from CP3_API_calls.Create_API_Variables import create_vars
 from CP3_API_calls.BaselineCatalogue import baseline_catalogue
 from CP3_API_calls.ProjectCatalogue import ProjectCatalogue
@@ -18,15 +18,25 @@ from ReportFactory.create_reports import create_worddoc
 json_file_name = "CP3_deployments.json"
 url_vars_file_path = f"./Variables/{json_file_name}"
 returned_combined_list = vars_from_json_file(url_vars_file_path)
+
 org_list = returned_combined_list[1]
 entityname_list = returned_combined_list[2]
 url_list = returned_combined_list[3]
 json_file_ok = returned_combined_list[0][0]
 
-show_drop_down = False
+# Get API creds from the variables json file
+API_file_name = "API_Profile.json"
+API_vars_file_path = f"./Variables/{API_file_name}"
+API_vars = API_vars_json_file(API_vars_file_path)
+
+username = API_vars[0]
+password = API_vars[1]
+grant_type = API_vars[2]
+
 nav_stage = 1
 all_well = 0
 SpatialFeatureChoice = ""
+
 if json_file_ok:
     org_choice = org_list[0]  # Make the 1st one in the list the default
     url_choice = url_list[0]  # Make the 1st one in the list the default
@@ -35,22 +45,24 @@ else:
     org_choice = []
     url_choice = []
     entity_choice = []
+
 spatial_var = []
 sys_username = "Bernard"
 # This part of the credentials for the API call (to my understanding) is default allways "password"
-grant_type = "password"
+
 
 app = Flask(__name__)  # to make the app run without any
-app.config['SECRET_KEY'] = os.urandom(24)
+#app.config['SECRET_KEY'] = os.urandom(24)
+app.config['SECRET_KEY'] = '/sdasd!@#CVVWRER12_'
 app.config['DOWNLOAD_FOLDER'] = "/DOWNLOAD_FOLDER"
 
 
 # This route is the "home" route that redirects immediately to "home_in.html"
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    global show_drop_down, all_well, url_choice, url_list, spatial_var, username, password, grant_type, org_choice
-    global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var, entityname_list, entity_choice
-    global layer_list, number_of_plots, nav_stage
+    global all_well, url_choice, url_list, spatial_var, username, password, grant_type, org_choice
+    global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var, entityname_list
+    global layer_list, number_of_plots, nav_stage, entity_choice
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
     global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2, sys_username
 
@@ -63,15 +75,10 @@ def home():
             button_dlreport = request.form.get("download_report")
 
             if button_1stAPI is not None and nav_stage == 1:  # Pressed the button to call an API
-                print(f"In 1st if. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
                 # The all_well variable is zero if no APIs were returned successfully yet
                 all_well = 0
                 # The spatial_var is a list with the spatial feautures that the user cna select from later on
                 spatial_var = []
-
-                # Get the credentials for the API call from the user
-                username = request.form.get('username')
-                password = request.form.get('password')
 
                 # Read the url chosen from the radio button choice that was made (it defaults on the 1st one)
                 url_choice = request.form['flexRadioDefault']
@@ -139,7 +146,6 @@ def home():
 
                 # If all the API's were called successfully, show the DropDown
                 if all_well == 5:
-                    show_drop_down = True
                     flash(f"Successfull API call on {org_choice} CP3 system.\n"
                           f"Select spatial feature and initiate 2nd API call.")
                     nav_stage = 2
@@ -156,19 +162,14 @@ def home():
                                        SpatialFeatureChoice=SpatialFeatureChoice)
 
             elif button_1stAPI is not None and nav_stage == 2:  # Pressed the button to select a another site
-                print(f"In 2nd if. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
                 nav_stage = 1
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
                                        url_list=url_list, spatial_var=spatial_var,
                                        SpatialFeatureChoice=SpatialFeatureChoice)
 
             elif button_2ndAPI is not None and (nav_stage == 2 or nav_stage ==3): # Calling the 2nd set of APIs
-                print(f"In 3rd if. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
                 SpatialFeatureChoice = request.form['inputGroupSelect01']
                 if SpatialFeatureChoice != "Choose...":  # User selected a spatial feature
-
-                    print(f"SpatialFeatureChoice: {SpatialFeatureChoice}")
-
                     # Call the MapServiceIntersectionCatalogue - it can only be called now that the preferred spatial
                     # feature is selected by the user (SpatialFeatureChoice).
                     df_MapServiceIntersections = pd.DataFrame(
@@ -189,7 +190,7 @@ def home():
                                        SpatialFeatureChoice=SpatialFeatureChoice)
 
             elif button_dlreport is not None and nav_stage == 3:  # Calling the 2nd set of APIs
-                print(f"In 4th if. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
+                SpatialFeatureChoice = request.form['inputGroupSelect01']
                 # All APIs have now been called so the report building can proceed
                 # Change the FeatureClassName column to "category" type
                 df_MapServiceIntersections['FeatureClassName'].astype("category")
@@ -337,9 +338,19 @@ def home():
                     return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
                                            url_list=url_list, spatial_var=spatial_var,
                                            SpatialFeatureChoice=SpatialFeatureChoice)
+            elif button_dlreport is not None and nav_stage == 2:  # User pressed the report button again but did not load the spatial features again
+                nav_stage = 2
+                flash("You selected to download a report again without having loaded the variables required for your "
+                      "newly selected spatial feature selection. Please press the '2. Call selected spatial feature "
+                      "variables' before attempting to download a spatial report again.")
+                return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
+                                       url_list=url_list, spatial_var=spatial_var,
+                                       SpatialFeatureChoice=SpatialFeatureChoice)
+
+
+
 
         else:  # Get not Post, in other words when it lands
-            print(f"In GET. nav_stage={nav_stage}. SF = {SpatialFeatureChoice}")
             return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
                                    url_list=url_list, spatial_var=spatial_var,
                                    SpatialFeatureChoice=SpatialFeatureChoice)

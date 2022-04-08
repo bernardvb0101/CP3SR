@@ -1,0 +1,11 @@
+{
+    "https://connect.cp3.co.za/": {
+        "server_url": "https://connect.cp3.co.za/",
+        "filename": "/Users/bernard/PycharmProjects/CP3SR",
+        "app_url": "https://connect.cp3.co.za/connect/#/apps/884ca20c-9110-4c5a-a25f-9634545f2186",
+        "app_id": "884ca20c-9110-4c5a-a25f-9634545f2186",
+        "app_guid": "884ca20c-9110-4c5a-a25f-9634545f2186",
+        "title": "CP3SR",
+        "app_mode": "python-api"
+    }
+}
