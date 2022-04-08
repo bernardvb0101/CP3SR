@@ -333,30 +333,31 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                                f"{sum_top_five_cost}. This accounts for {sum_top_five_cost_perc_of_total}" \
                                f" of the total capital demand."
         paragraphs5['24 xx'] = f"The top 5 {SpatialFeatureChoice} in terms of Capital Demand are {top_five_capfeat_text}."
-    paragraphs5['25 cp'] = f"Figure {fig_nr}: The top 5 {SpatialFeatureChoice} vs the rest"
+        paragraphs5['25 cp'] = f"Figure {fig_nr}: The top 5 {SpatialFeatureChoice} vs the rest"
 
     head_formatter(headings2)
     par_formatter(paragraphs5)
 
-    colors = ['red', 'green']
-    labels = ["Top 5", "The Rest"]
 
-    # Create subplots: use 'domain' type for Pie subplot
-    fig[fig_nr] = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
-    fig[fig_nr].add_trace(go.Pie(labels=labels, values=[sum_top_five_projects, (sum_projects - sum_top_five_projects)],
-                                 name="Nr of Projs"), 1, 1)
-    fig[fig_nr].add_trace(
-        go.Pie(labels=labels, values=[sum_top_five_cost_float, (sum_cost_float - sum_top_five_cost_float)],
-               name="Capital Demand"), 1, 2)
-    # Use `hole` to create a donut-like pie chart
-    fig[fig_nr].update_traces(hole=.4)
-    fig[fig_nr].update_traces(marker=dict(colors=colors, line=dict(color='#000000', width=2)))
-    fig[fig_nr].update_layout(annotations=[dict(text='Nr of Projs', x=0.18, y=0.5, font_size=10, showarrow=False),
-                                           dict(text='Capital Demand', x=0.82, y=0.5, font_size=10, showarrow=False)])
+    if chosen_feature_qty > 10:
+        colors = ['red', 'green']
+        labels = ["Top 5", "The Rest"]
+        # Create subplots: use 'domain' type for Pie subplot
+        fig[fig_nr] = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
+        fig[fig_nr].add_trace(go.Pie(labels=labels, values=[sum_top_five_projects, (sum_projects - sum_top_five_projects)],
+                                     name="Nr of Projs"), 1, 1)
+        fig[fig_nr].add_trace(
+            go.Pie(labels=labels, values=[sum_top_five_cost_float, (sum_cost_float - sum_top_five_cost_float)],
+                   name="Capital Demand"), 1, 2)
+        # Use `hole` to create a donut-like pie chart
+        fig[fig_nr].update_traces(hole=.4)
+        fig[fig_nr].update_traces(marker=dict(colors=colors, line=dict(color='#000000', width=2)))
+        fig[fig_nr].update_layout(annotations=[dict(text='Nr of Projs', x=0.18, y=0.5, font_size=10, showarrow=False),
+                                               dict(text='Capital Demand', x=0.82, y=0.5, font_size=10, showarrow=False)])
 
-    fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
-    document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(17))
-    fig_nr += 1
+        fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
+        document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(17))
+        fig_nr += 1
 
 
     paragraphs6 ={}
