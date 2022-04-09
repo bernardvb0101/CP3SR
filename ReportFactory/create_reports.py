@@ -298,56 +298,52 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     table = document.add_table(rows=1, cols=4, style='Grid Table 4')
     heading_cells = table.rows[0].cells
     heading_cells[0].text = 'Description'
-    heading_cells[1].text = f'{SpatialFeatureChoice}'
+    heading_cells[1].text = 'Value'
     heading_cells[2].text = 'Description'
-    heading_cells[3].text = f'{SpatialFeatureChoice}'
+    heading_cells[3].text = 'Value'
 
     cells = table.add_row().cells
-    cells[0].text = f"All {SpatialFeatureChoice}"
-    cells[1].text = f"The total number of projects in all {SpatialFeatureChoice}:\n{sum_projects} projects"
-    cells[2].text = f"All {SpatialFeatureChoice}"
-    cells[3].text = f"The total capital demand in all {SpatialFeatureChoice}:\n{sum_cost}"
+    cells[0].text = f"The total number of projects in all {SpatialFeatureChoice}:"
+    cells[1].text = f"{sum_projects} projects"
+    cells[2].text = f"The total capital demand in all {SpatialFeatureChoice}:"
+    cells[3].text = f"{sum_cost}"
 
     cells = table.add_row().cells
     cells[0].text = f"The highest number of projects:"
-    cells[1].text = f"{SpatialFeatureChoice}: {maximum_projects_feature}\nNumber of projects: {maximum_projects}\nPercentage of total: " \
+    cells[1].text = f"{SpatialFeatureChoice}: {maximum_projects_feature}\n\nNumber of projects: {maximum_projects}\n\nPercentage of total: " \
                     f"{max_projects_perc_of_total}"
     cells[2].text = f"The highest capital demand:"
-    cells[3].text = f"{SpatialFeatureChoice}: {maximum_cost_feature}\nCapital Demand: {maximum_cost}\nPercentage of total: " \
+    cells[3].text = f"{SpatialFeatureChoice}: {maximum_cost_feature}\n\nCapital Demand: {maximum_cost}\n\nPercentage of total: " \
                     f"{max_cost_perc_of_total}"
 
     cells = table.add_row().cells
     cells[0].text = f"The lowest number of projects:"
-    cells[1].text = f"{SpatialFeatureChoice}: {minimum_projects_feature}\nNumber of projects: {minimum_projects}\nPercentage of total: " \
+    cells[1].text = f"{SpatialFeatureChoice}: {minimum_projects_feature}\n\nNumber of projects: {minimum_projects}\n\nPercentage of total: " \
                     f"{min_projects_perc_of_total}"
     cells[2].text = f"The lowest capital demand:"
-    cells[3].text = f"{SpatialFeatureChoice}: {minimum_cost_feature}\nCapital Demand: {minimum_cost}\nPercentage of total: " \
+    cells[3].text = f"{SpatialFeatureChoice}: {minimum_cost_feature}\n\nCapital Demand: {minimum_cost}\n\nPercentage of total: " \
                     f"{min_cost_perc_of_total}"
 
     if chosen_feature_qty > 10:
         cells = table.add_row().cells
         cells[0].text = f"The 5 {SpatialFeatureChoice} that collectively have with the highest number of projects:"
-        cells[1].text = f"{SpatialFeatureChoice}: {top_five_projfeat_text}\nNumber of projects: {sum_top_five_projects}\nPercentage of total: " \
+        cells[1].text = f"{SpatialFeatureChoice}: {top_five_projfeat_text}\n\nNumber of projects: {sum_top_five_projects}\n\nPercentage of total: " \
                         f"{sum_top_five_projects_perc_of_total}"
         cells[2].text = f"The 5 {SpatialFeatureChoice} that collectively have collective the highest capital demand:"
-        cells[3].text = f"{SpatialFeatureChoice}: {top_five_capfeat_text}\nCapital Demand: {sum_top_five_cost}\nPercentage of total: " \
+        cells[3].text = f"{SpatialFeatureChoice}: {top_five_capfeat_text}\n\nCapital Demand: {sum_top_five_cost}\n\nPercentage of total: " \
                         f"{sum_top_five_cost_perc_of_total}"
 
     cells = table.add_row().cells
-    cells[0].text = f"All {SpatialFeatureChoice}:"
-    cells[1].text = f"The average number of projects per {SpatialFeatureChoice}:\n" \
-                    f"{'{0:.3g}'.format(average_projects)} projects"
-    cells[2].text = f"All {SpatialFeatureChoice}:"
-    cells[3].text = f"The average capital demand per {SpatialFeatureChoice}:\n" \
-                    f"{average_cost}"
+    cells[0].text = f"The average number of projects per {SpatialFeatureChoice}:"
+    cells[1].text = f"{'{0:.3g}'.format(average_projects)} projects"
+    cells[2].text = f"The average capital demand per {SpatialFeatureChoice}:"
+    cells[3].text = f"{average_cost}"
 
     cells = table.add_row().cells
-    cells[0].text = f"All {SpatialFeatureChoice}:"
-    cells[1].text = f"The 75th percentile of projects per {SpatialFeatureChoice}:\n" \
-                    f"{seventy_fifth_projects} projects"
-    cells[2].text = f"All {SpatialFeatureChoice}:"
-    cells[3].text = f"The 75th percentile of capital demand per {SpatialFeatureChoice}:\n" \
-                    f"{seventy_fifth_cost}"
+    cells[0].text = f"The 75th percentile of projects per {SpatialFeatureChoice}:"
+    cells[1].text = f"{seventy_fifth_projects} projects"
+    cells[2].text = f"The 75th percentile of capital demand per {SpatialFeatureChoice}:"
+    cells[3].text = f"{seventy_fifth_cost}"
 
     tbl_nr += 1
 
