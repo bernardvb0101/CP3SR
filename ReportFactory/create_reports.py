@@ -13,9 +13,11 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     """
     This module creates a spatial report in a MSWord File
     """
-    global teller, fig_nr, fig
+    global teller, fig_nr, fig, tbl_nr, tbl
     fig_nr = 1
     fig = {}
+    tbl_nr = 1
+    tbl ={}
 
     def par_formatter(paragraphs):
         """
@@ -287,73 +289,121 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
 
     headings2 = {}
     headings2['1'] = f"{SpatialFeatureChoice} Analysis"
-
     paragraphs5 = {}
-    paragraphs5['1 n'] = f"There is a total number of "
-    paragraphs5['2 b'] = f"{chosen_feature_qty}"
-    paragraphs5['3 i'] = f" {SpatialFeatureChoice}."
-    paragraphs5['4 n'] = f" Each of the "
-    paragraphs5['5 i'] = f"{SpatialFeatureChoice}"
-    paragraphs5['6 n'] = f" has two important perspectives namely:"
-    paragraphs5['7 xx'] = f"the number of  projects within each geographic area and;"
-    paragraphs5['8 xx'] = f"the total capital demand per area."
-    # ********** Projects per feature **********
-    paragraphs5['9 al'] = f"\nThe following information relates to the number of projects in {SpatialFeatureChoice}:"
-    paragraphs5['10 xx'] = f"{maximum_projects_feature} has the highest number of projects: {maximum_projects}" \
-                           f" projects ({max_projects_perc_of_total} of total number of projects);"
-    if minimum_projects == 1:
-        paragraphs5['11 xx'] = f"{minimum_projects_feature} has the lowest number of projects: {minimum_projects} " \
-                               f"project ({min_projects_perc_of_total} of total number of projects);"
-    else:
-        paragraphs5['11 xx'] = f"{minimum_projects_feature} has the lowest number of projects: {minimum_projects} " \
-                               f"projects ({min_projects_perc_of_total} of total number of projects);"
-    paragraphs5[
-        '12 xx'] = f"The average number of projects per {SpatialFeatureChoice} is {'{0:.3g}'.format(average_projects)} " \
-                   f"projects;"
-    paragraphs5['13 xx'] = f"The 75th percentile of projects per {SpatialFeatureChoice} is {seventy_fifth_projects} " \
-                           f"projects;"
-    paragraphs5['14 xx'] = f"The total number of projects in all {SpatialFeatureChoice} is {sum_projects} projects;"
-    if chosen_feature_qty > 10:
-        paragraphs5['15 xx'] = f"The 5 {SpatialFeatureChoice} with the most projects have a combined total of " \
-                               f"{sum_top_five_projects} projects. This accounts for {sum_top_five_projects_perc_of_total}" \
-                               f" of the total number of projects."
-        paragraphs5['16 xx'] = f"The top 5 {SpatialFeatureChoice} in terms of number of projects are {top_five_projfeat_text}."
-
-    # ********** Captial demand per feature **********
-    paragraphs5['17 al'] = f"\nThe following information relates to the capital demand in {SpatialFeatureChoice}:"
-    paragraphs5['18 xx'] = f"{maximum_cost_feature} has the highest capital demand: {maximum_cost} " \
-                           f"({max_cost_perc_of_total} of total capital demand);"
-    paragraphs5['19 xx'] = f"{minimum_cost_feature} has the lowest capital demand: {minimum_cost} " \
-                           f"({min_cost_perc_of_total} of total capital demand);"
-    paragraphs5['20 xx'] = f"The average capital demand per {SpatialFeatureChoice} is {average_cost};"
-    paragraphs5['21 xx'] = f"The 75th percentile of capital demand per {SpatialFeatureChoice} is {seventy_fifth_cost}."
-    paragraphs5['22 xx'] = f"The total capital demand in all {SpatialFeatureChoice} is {sum_cost};"
-    if chosen_feature_qty > 10:
-        paragraphs5['23 xx'] = f"The 5 {SpatialFeatureChoice} with the highest capital demand have a combined total of " \
-                               f"{sum_top_five_cost}. This accounts for {sum_top_five_cost_perc_of_total}" \
-                               f" of the total capital demand."
-        paragraphs5['24 xx'] = f"The top 5 {SpatialFeatureChoice} in terms of Capital Demand are {top_five_capfeat_text}."
-        paragraphs5['25 cp'] = f"Figure {fig_nr}: The top 5 {SpatialFeatureChoice} vs the rest"
+    paragraphs5['1 cp'] = f"Table {tbl_nr}: {SpatialFeatureChoice} Analysis"
 
     head_formatter(headings2)
     par_formatter(paragraphs5)
 
+    table = document.add_table(rows=1, cols=4, style='Grid Table 4')
+    heading_cells = table.rows[0].cells
+    heading_cells[0].text = 'Description'
+    heading_cells[1].text = f'{SpatialFeatureChoice}'
+    heading_cells[2].text = 'Description'
+    heading_cells[3].text = f'{SpatialFeatureChoice}'
+
+    cells = table.add_row().cells
+    cells[0].text = f"All {SpatialFeatureChoice}"
+    cells[1].text = f"The total number of projects in all {SpatialFeatureChoice}:\n{sum_projects} projects"
+    cells[2].text = f"All {SpatialFeatureChoice}"
+    cells[3].text = f"The total capital demand in all {SpatialFeatureChoice}:\n{sum_cost}"
+
+    cells = table.add_row().cells
+    cells[0].text = f"The highest number of projects:"
+    cells[1].text = f"{SpatialFeatureChoice}: {maximum_projects_feature}\nNumber of projects: {maximum_projects}\nPercentage of total: " \
+                    f"{max_projects_perc_of_total}"
+    cells[2].text = f"The highest capital demand:"
+    cells[3].text = f"{SpatialFeatureChoice}: {maximum_cost_feature}\nCapital Demand: {maximum_cost}\nPercentage of total: " \
+                    f"{max_cost_perc_of_total}"
+
+    cells = table.add_row().cells
+    cells[0].text = f"The lowest number of projects:"
+    cells[1].text = f"{SpatialFeatureChoice}: {minimum_projects_feature}\nNumber of projects: {minimum_projects}\nPercentage of total: " \
+                    f"{min_projects_perc_of_total}"
+    cells[2].text = f"The lowest capital demand:"
+    cells[3].text = f"{SpatialFeatureChoice}: {minimum_cost_feature}\nCapital Demand: {minimum_cost}\nPercentage of total: " \
+                    f"{min_cost_perc_of_total}"
+
+    if chosen_feature_qty > 10:
+        cells = table.add_row().cells
+        cells[0].text = f"The 5 {SpatialFeatureChoice} that collectively have with the highest number of projects:"
+        cells[1].text = f"{SpatialFeatureChoice}: {top_five_projfeat_text}\nNumber of projects: {sum_top_five_projects}\nPercentage of total: " \
+                        f"{sum_top_five_projects_perc_of_total}"
+        cells[2].text = f"The 5 {SpatialFeatureChoice} that collectively have collective the highest capital demand:"
+        cells[3].text = f"{SpatialFeatureChoice}: {top_five_capfeat_text}\nCapital Demand: {sum_top_five_cost}\nPercentage of total: " \
+                        f"{sum_top_five_cost_perc_of_total}"
+
+    cells = table.add_row().cells
+    cells[0].text = f"All {SpatialFeatureChoice}:"
+    cells[1].text = f"The average number of projects per {SpatialFeatureChoice}:\n" \
+                    f"{'{0:.3g}'.format(average_projects)} projects"
+    cells[2].text = f"All {SpatialFeatureChoice}:"
+    cells[3].text = f"The average capital demand per {SpatialFeatureChoice}:\n" \
+                    f"{average_cost}"
+
+    cells = table.add_row().cells
+    cells[0].text = f"All {SpatialFeatureChoice}:"
+    cells[1].text = f"The 75th percentile of projects per {SpatialFeatureChoice}:\n" \
+                    f"{seventy_fifth_projects} projects"
+    cells[2].text = f"All {SpatialFeatureChoice}:"
+    cells[3].text = f"The 75th percentile of capital demand per {SpatialFeatureChoice}:\n" \
+                    f"{seventy_fifth_cost}"
+
+    tbl_nr += 1
+
+    paragraphs5a = {}
+    if chosen_feature_qty > 10:
+        paragraphs5a['1 cp'] = f"Figure {fig_nr}.1: The single highest {SpatialFeatureChoice} (Nr of Projects" \
+                           f" & Capital Demand) vs the rest"
+    else:
+        paragraphs5a['1 cp'] = f"Figure {fig_nr}: The single highest {SpatialFeatureChoice} (Nr of Projects" \
+                           f" & Capital Demand) vs the rest"
+    par_formatter(paragraphs5a)
+    colors = ['red', 'green']
+    labels = ["Highest", "The Rest"]
+    # Create subplots: use 'domain' type for Pie subplot
+    fig[fig_nr] = make_subplots(rows=1, cols=2, specs=[[{'type': 'domain'}, {'type': 'domain'}]])
+    fig[fig_nr].add_trace(go.Pie(labels=labels, values=[maximum_projects, (sum_projects - maximum_projects)],
+                                 name="Nr of Projs"), 1, 1)
+    fig[fig_nr].add_trace(
+        go.Pie(labels=labels, values=[maximum_cost_float, (sum_cost_float - maximum_cost_float)],
+               name="Cap Dem (R)"), 1, 2)
+    # Use `hole` to create a donut-like pie chart
+    fig[fig_nr].update_traces(hole=.4)
+    fig[fig_nr].update_traces(marker=dict(colors=colors, line=dict(color='#000000', width=2)))
+    fig[fig_nr].update_layout(annotations=[dict(text='Nr of Projs', x=0.16, y=0.5, font_size=10, showarrow=False),
+                                           dict(text='Cap Dem (R)', x=0.85, y=0.5, font_size=10, showarrow=False)])
+    fig[fig_nr].update_layout(legend=dict(orientation="h", y=0.99, x=0.35))
+
+    fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
+    document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(17))
+
+    if chosen_feature_qty < 11:  # If >10, it will be incremented in the next step, not now
+        fig_nr += 1
+
+
+    if chosen_feature_qty > 10:
+        paragraphs5b = {}
+        paragraphs5b['1 cp'] = f"Figure {fig_nr}.2: The 5 {SpatialFeatureChoice} with the highest values (Nr of Projects" \
+                               f" & Capital Demand) vs the rest"
+        par_formatter(paragraphs5b)
 
     if chosen_feature_qty > 10:
         colors = ['red', 'green']
-        labels = ["Top 5", "The Rest"]
+        labels = ["5 Highest", "The Rest"]
         # Create subplots: use 'domain' type for Pie subplot
         fig[fig_nr] = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
         fig[fig_nr].add_trace(go.Pie(labels=labels, values=[sum_top_five_projects, (sum_projects - sum_top_five_projects)],
                                      name="Nr of Projs"), 1, 1)
         fig[fig_nr].add_trace(
             go.Pie(labels=labels, values=[sum_top_five_cost_float, (sum_cost_float - sum_top_five_cost_float)],
-                   name="Capital Demand"), 1, 2)
+                   name="Cap Dem (R)"), 1, 2)
         # Use `hole` to create a donut-like pie chart
         fig[fig_nr].update_traces(hole=.4)
         fig[fig_nr].update_traces(marker=dict(colors=colors, line=dict(color='#000000', width=2)))
-        fig[fig_nr].update_layout(annotations=[dict(text='Nr of Projs', x=0.18, y=0.5, font_size=10, showarrow=False),
-                                               dict(text='Capital Demand', x=0.82, y=0.5, font_size=10, showarrow=False)])
+        fig[fig_nr].update_layout(annotations=[dict(text='Nr of Projs', x=0.16, y=0.5, font_size=10, showarrow=False),
+                                               dict(text='Cap Dem (R)', x=0.85, y=0.5, font_size=10, showarrow=False)])
+        fig[fig_nr].update_layout(legend=dict(orientation="h", y=0.99, x=0.35))
 
         fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
         document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(17))
