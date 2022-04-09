@@ -64,7 +64,7 @@
                       {% elif (nav_stage == 3) or (nav_stage == 2 and SpatialFeatureChoice != "") %}
                           {% for feature in spatial_var[0] %}
                             {% if feature == SpatialFeatureChoice %}
-                              <option value="{{ SpatialFeatureChoice }}" selected>{{ SpatialFeatureChoice }}</option>
+                              <option value="{{ feature }}" selected>{{ feature }}</option>
                             {% else %}
                               <option value="{{ feature }}">{{ feature }}</option>
                             {% endif %}

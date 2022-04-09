@@ -161,7 +161,7 @@ def home():
                                        url_list=url_list, spatial_var=spatial_var,
                                        SpatialFeatureChoice=SpatialFeatureChoice)
 
-            elif button_1stAPI is not None and nav_stage == 2:  # Pressed the button to select a another site
+            elif button_1stAPI is not None and (nav_stage == 2 or nav_stage ==3):  # Pressed the button to select a another site
                 nav_stage = 1
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
                                        url_list=url_list, spatial_var=spatial_var,
@@ -169,6 +169,7 @@ def home():
 
             elif button_2ndAPI is not None and (nav_stage == 2 or nav_stage ==3): # Calling the 2nd set of APIs
                 SpatialFeatureChoice = request.form['inputGroupSelect01']
+                print(f"Moes hier wees en SpatialFeatureChoice={SpatialFeatureChoice}")
                 if SpatialFeatureChoice != "Choose...":  # User selected a spatial feature
                     # Call the MapServiceIntersectionCatalogue - it can only be called now that the preferred spatial
                     # feature is selected by the user (SpatialFeatureChoice).
@@ -333,7 +334,7 @@ def home():
                     return send_file(path, as_attachment=True)
                 else:
                     nav_stage = 2
-                    flash(f"There is no spatial intersect on {SpatialFeatureChoice}. A spatial feature report can "
+                    flash(f"There are no spatial intersects on {SpatialFeatureChoice}. A spatial feature report can "
                           f"therefore not be generated.")
                     return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
                                            url_list=url_list, spatial_var=spatial_var,

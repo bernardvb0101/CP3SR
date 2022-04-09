@@ -120,6 +120,9 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     perc_no_intersects = (no_intersects / total_datapoints * 100)
     chosen_feature_qty = var_dict['chosen_feature_qty']
 
+    SpatialFeatureChoice_Text = SpatialFeatureChoice.replace("_","")
+
+
     # Set up other vars
     timenow = datetime.today().strftime('%Y-%m-%d-%H_%M')  # Stamp the date and time
     datenow = datetime.today().strftime('%Y-%m-%d')  # Stamp the date
@@ -180,7 +183,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     document = Document(docx=f"./ReportFactory/Master.docx")
 
     paragraphs00 = {}
-    paragraphs00['1 tl'] = f"Spatial Query Report: {SpatialFeatureChoice}"
+    paragraphs00['1 tl'] = f"Spatial Query Report: {SpatialFeatureChoice_Text}"
 
     # Put together the dictionary
     paragraphs0 = {}
@@ -198,7 +201,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     paragraphs1['4 b'] = f"'{baseline_dict['Description']}'"
     paragraphs1['5 n'] = " was used. "
     paragraphs1['6 n'] = "The spatial feature that was selected for the purpose of this report was: "
-    paragraphs1['7 b'] = f"'{SpatialFeatureChoice}'"
+    paragraphs1['7 b'] = f"'{SpatialFeatureChoice_Text}'"
     paragraphs1['8 n'] = "."
 
     paragraphs2 = {}
@@ -246,7 +249,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     paragraphs4['2 i'] = f"{total_datapoints}"
     paragraphs4['3 n'] = f" projects of which a total of "
     paragraphs4['4 i'] = f"{no_intersects} ({'{0:.3g}'.format(perc_no_intersects)}%)"
-    paragraphs4['5 n'] = f" projects do not have any recorded intersection (overlap) with {SpatialFeatureChoice}." \
+    paragraphs4['5 n'] = f" projects do not have any recorded intersection (overlap) with {SpatialFeatureChoice_Text}." \
                          f"The following spatial features are available for queries using this API profile:"
     teller = 6
     for feature in Layer_List:
@@ -263,7 +266,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                                   f"rarely the reason)."
     teller += 1
     paragraphs4[f"{teller} al"] = f"\nIt is important to take note of the {'{0:.3g}'.format(perc_no_intersects)}%" \
-                                  f" projects that do not intersect with {SpatialFeatureChoice} feature when " \
+                                  f" projects that do not intersect with {SpatialFeatureChoice_Text} feature when " \
                                   f"appraising this report."
     if perc_no_intersects <= 5:
         teller += 1
@@ -288,73 +291,116 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     # document.add_page_break()
 
     headings2 = {}
-    headings2['1'] = f"{SpatialFeatureChoice} Analysis"
-    paragraphs5 = {}
-    paragraphs5['1 cp'] = f"Table {tbl_nr}: {SpatialFeatureChoice} Analysis"
+    headings2['1'] = f"{SpatialFeatureChoice_Text} Analysis"
+    paragraphs5a = {}
+    paragraphs5a['1 cp'] = f"Table {tbl_nr}.1: {SpatialFeatureChoice_Text} Analysis - Number of Projects"
 
     head_formatter(headings2)
-    par_formatter(paragraphs5)
+    par_formatter(paragraphs5a)
 
-    table = document.add_table(rows=1, cols=4, style='Grid Table 4')
+    table = document.add_table(rows=1, cols=4, style='List Table 4')
     heading_cells = table.rows[0].cells
     heading_cells[0].text = 'Description'
-    heading_cells[1].text = 'Value'
-    heading_cells[2].text = 'Description'
-    heading_cells[3].text = 'Value'
+    heading_cells[1].text = 'Info (1)'
+    heading_cells[2].text = 'Info (2)'
+    heading_cells[3].text = 'Info (3)'
 
     cells = table.add_row().cells
-    cells[0].text = f"The total number of projects in all {SpatialFeatureChoice}:"
+    cells[0].text = f"The total number of projects in all {SpatialFeatureChoice_Text}"
     cells[1].text = f"{sum_projects} projects"
-    cells[2].text = f"The total capital demand in all {SpatialFeatureChoice}:"
-    cells[3].text = f"{sum_cost}"
+    cells[2].text = ""
+    cells[3].text = ""
 
     cells = table.add_row().cells
-    cells[0].text = f"The highest number of projects:"
-    cells[1].text = f"{SpatialFeatureChoice}: {maximum_projects_feature}\n\nNumber of projects: {maximum_projects}\n\nPercentage of total: " \
-                    f"{max_projects_perc_of_total}"
-    cells[2].text = f"The highest capital demand:"
-    cells[3].text = f"{SpatialFeatureChoice}: {maximum_cost_feature}\n\nCapital Demand: {maximum_cost}\n\nPercentage of total: " \
-                    f"{max_cost_perc_of_total}"
+    cells[0].text = f"The highest number of projects"
+    cells[1].text = f"{SpatialFeatureChoice_Text}:\nIn {maximum_projects_feature}"
+    cells[2].text = f"Number of projects in {maximum_projects_feature}:\n{maximum_projects}"
+    cells[3].text = f"Percentage of total in {maximum_projects_feature}:\n{max_projects_perc_of_total}"
 
     cells = table.add_row().cells
     cells[0].text = f"The lowest number of projects:"
-    cells[1].text = f"{SpatialFeatureChoice}: {minimum_projects_feature}\n\nNumber of projects: {minimum_projects}\n\nPercentage of total: " \
-                    f"{min_projects_perc_of_total}"
-    cells[2].text = f"The lowest capital demand:"
-    cells[3].text = f"{SpatialFeatureChoice}: {minimum_cost_feature}\n\nCapital Demand: {minimum_cost}\n\nPercentage of total: " \
-                    f"{min_cost_perc_of_total}"
+    cells[1].text = f"{SpatialFeatureChoice_Text}:\nIn {minimum_projects_feature}"
+    cells[2].text = f"Number of projects in {minimum_projects_feature}:\n{minimum_projects}"
+    cells[3].text = f"Percentage of total in {minimum_projects_feature}:\n{min_projects_perc_of_total}"
 
     if chosen_feature_qty > 10:
         cells = table.add_row().cells
-        cells[0].text = f"The 5 {SpatialFeatureChoice} that collectively have with the highest number of projects:"
-        cells[1].text = f"{SpatialFeatureChoice}: {top_five_projfeat_text}\n\nNumber of projects: {sum_top_five_projects}\n\nPercentage of total: " \
-                        f"{sum_top_five_projects_perc_of_total}"
-        cells[2].text = f"The 5 {SpatialFeatureChoice} that collectively have collective the highest capital demand:"
-        cells[3].text = f"{SpatialFeatureChoice}: {top_five_capfeat_text}\n\nCapital Demand: {sum_top_five_cost}\n\nPercentage of total: " \
-                        f"{sum_top_five_cost_perc_of_total}"
+        cells[0].text = f"The 5 {SpatialFeatureChoice_Text} that collectively have with the highest number of projects"
+        cells[1].text = f"{SpatialFeatureChoice_Text}:\nIn {top_five_projfeat_text}"
+        cells[2].text = f"Number of projects in {top_five_projfeat_text} together:\n{sum_top_five_projects}"
+        cells[3].text = f"Percentage of total in {top_five_projfeat_text} together:\n{sum_top_five_projects_perc_of_total}"
 
     cells = table.add_row().cells
-    cells[0].text = f"The average number of projects per {SpatialFeatureChoice}:"
+    cells[0].text = f"The average number of projects per {SpatialFeatureChoice_Text}"
     cells[1].text = f"{'{0:.3g}'.format(average_projects)} projects"
-    cells[2].text = f"The average capital demand per {SpatialFeatureChoice}:"
-    cells[3].text = f"{average_cost}"
+    cells[2].text = ""
+    cells[3].text = ""
 
     cells = table.add_row().cells
-    cells[0].text = f"The 75th percentile of projects per {SpatialFeatureChoice}:"
+    cells[0].text = f"The 75th percentile of projects of {SpatialFeatureChoice_Text}"
     cells[1].text = f"{seventy_fifth_projects} projects"
-    cells[2].text = f"The 75th percentile of capital demand per {SpatialFeatureChoice}:"
-    cells[3].text = f"{seventy_fifth_cost}"
+    cells[2].text = ""
+    cells[3].text = ""
+
+    paragraphs5b = {}
+    paragraphs5b['1 cp'] = f"Table {tbl_nr}.2: {SpatialFeatureChoice_Text} Analysis - Capital Demand (R)"
+    par_formatter(paragraphs5b)
+
+    table = document.add_table(rows=1, cols=4, style='List Table 4')
+    heading_cells = table.rows[0].cells
+    heading_cells[0].text = 'Description'
+    heading_cells[1].text = 'Info (1)'
+    heading_cells[2].text = 'Info (2)'
+    heading_cells[3].text = 'Info (3)'
+
+    cells = table.add_row().cells
+    cells[0].text = f"The total capital demand in all {SpatialFeatureChoice_Text}:\n"
+    cells[1].text = f"{sum_cost}"
+    cells[2].text = ""
+    cells[3].text = ""
+
+    cells = table.add_row().cells
+    cells[0].text = f"The highest capital demand"
+    cells[1].text = f"{SpatialFeatureChoice_Text}:\nIn {maximum_cost_feature}"
+    cells[2].text = f"Capital Demand in {maximum_cost_feature}:\n{maximum_cost}"
+    cells[3].text = f"Percentage of total in {maximum_cost_feature}:\n{max_cost_perc_of_total}"
+
+    cells = table.add_row().cells
+    cells[0].text = f"The lowest capital demand"
+    cells[1].text = f"{SpatialFeatureChoice_Text}:\nIn {minimum_cost_feature}"
+    cells[2].text = f"Capital Demand in {minimum_cost_feature}:\n{minimum_cost}"
+    cells[3].text = f"Percentage of total in {minimum_cost_feature}:\n{min_cost_perc_of_total}"
+
+    if chosen_feature_qty > 10:
+        cells = table.add_row().cells
+        cells[0].text = f"The 5 {SpatialFeatureChoice_Text} that collectively have collective the highest capital demand:"
+        cells[1].text = f"{SpatialFeatureChoice_Text}:\nIn {top_five_capfeat_text}"
+        cells[2].text = f"Capital Demand in {top_five_capfeat_text} together:\n{sum_top_five_cost}"
+        cells[3].text = f"Percentage of total in {top_five_capfeat_text} together:\n{sum_top_five_cost_perc_of_total}"
+
+    cells = table.add_row().cells
+    cells[0].text = f"The average capital demand per {SpatialFeatureChoice_Text}:"
+    cells[1].text = f"{average_cost}"
+    cells[2].text = ""
+    cells[3].text = ""
+
+    cells = table.add_row().cells
+    cells[0].text = f"The 75th percentile of capital demand for {SpatialFeatureChoice_Text}:"
+    cells[1].text = f"{seventy_fifth_cost}"
+    cells[2].text = ""
+    cells[3].text = ""
 
     tbl_nr += 1
 
-    paragraphs5a = {}
+    paragraphs5c = {}
     if chosen_feature_qty > 10:
-        paragraphs5a['1 cp'] = f"Figure {fig_nr}.1: The single highest {SpatialFeatureChoice} (Nr of Projects" \
+        paragraphs5c['1 cp'] = f"Figure {fig_nr}.1: The single highest {SpatialFeatureChoice_Text} (Nr of Projects" \
                            f" & Capital Demand) vs the rest"
     else:
-        paragraphs5a['1 cp'] = f"Figure {fig_nr}: The single highest {SpatialFeatureChoice} (Nr of Projects" \
+        paragraphs5c['1 cp'] = f"Figure {fig_nr}: The single highest {SpatialFeatureChoice_Text} (Nr of Projects" \
                            f" & Capital Demand) vs the rest"
-    par_formatter(paragraphs5a)
+    par_formatter(paragraphs5c)
+
     colors = ['red', 'green']
     labels = ["Highest", "The Rest"]
     # Create subplots: use 'domain' type for Pie subplot
@@ -371,18 +417,18 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                                            dict(text='Cap Dem (R)', x=0.85, y=0.5, font_size=10, showarrow=False)])
     fig[fig_nr].update_layout(legend=dict(orientation="h", y=0.99, x=0.35))
 
-    fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
-    document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(17))
+    fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.1.png")
+    document.add_picture(f"./static/images/fig{fig_nr}.1.png", width=Cm(17))
 
     if chosen_feature_qty < 11:  # If >10, it will be incremented in the next step, not now
         fig_nr += 1
 
 
     if chosen_feature_qty > 10:
-        paragraphs5b = {}
-        paragraphs5b['1 cp'] = f"Figure {fig_nr}.2: The 5 {SpatialFeatureChoice} with the highest values (Nr of Projects" \
+        paragraphs5d = {}
+        paragraphs5d['1 cp'] = f"Figure {fig_nr}.2: The 5 {SpatialFeatureChoice_Text} with the highest values (Nr of Projects" \
                                f" & Capital Demand) vs the rest"
-        par_formatter(paragraphs5b)
+        par_formatter(paragraphs5d)
 
     if chosen_feature_qty > 10:
         colors = ['red', 'green']
@@ -401,8 +447,8 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                                                dict(text='Cap Dem (R)', x=0.85, y=0.5, font_size=10, showarrow=False)])
         fig[fig_nr].update_layout(legend=dict(orientation="h", y=0.99, x=0.35))
 
-        fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
-        document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(17))
+        fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.2.png")
+        document.add_picture(f"./static/images/fig{fig_nr}.2.png", width=Cm(17))
         fig_nr += 1
 
 
@@ -422,7 +468,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
                 # Add a page break
                 document.add_page_break()
-                paragraphs6['1 cp'] = f"Figure {fig_nr}: Projects and Capital Demand per {SpatialFeatureChoice}"
+                paragraphs6['1 cp'] = f"Figure {fig_nr}: Projects and Capital Demand per {SpatialFeatureChoice_Text}"
                 par_formatter(paragraphs6)
                 document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(15))
     elif number_of_plots == 2:
@@ -442,12 +488,12 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 fig[temp_fig_nr2].write_image(f"./static/images/fig{temp_fig_nr2}.png")
                 # Add a page break
                 document.add_page_break()
-                paragraphs6['1 cp'] = f"Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice} (1/2)"
+                paragraphs6['1 cp'] = f"Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (1/2)"
                 par_formatter(paragraphs6)
                 document.add_picture(f"./static/images/fig{temp_fig_nr1}.png", width=Cm(15))
                 # Add a page break
                 document.add_page_break()
-                paragraphs7['1 cp'] = f"Figure {temp_fig_nr2}: Projects and Capital Demand per {SpatialFeatureChoice} (2/2)"
+                paragraphs7['1 cp'] = f"Figure {temp_fig_nr2}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (2/2)"
                 par_formatter(paragraphs7)
                 document.add_picture(f"./static/images/fig{temp_fig_nr2}.png", width=Cm(15))
     elif number_of_plots == 3:
@@ -473,17 +519,17 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 fig[temp_fig_nr3].write_image(f"./static/images/fig{temp_fig_nr3}.png")
                 # Add a page break
                 document.add_page_break()
-                paragraphs6['1 cp'] = f"Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice} (1/3)"
+                paragraphs6['1 cp'] = f"Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (1/3)"
                 par_formatter(paragraphs6)
                 document.add_picture(f"./static/images/fig{temp_fig_nr1}.png", width=Cm(15))
                 # Add a page break
                 document.add_page_break()
-                paragraphs7['1 cp'] = f"Figure {temp_fig_nr2}: Projects and Capital Demand per {SpatialFeatureChoice} (2/3)"
+                paragraphs7['1 cp'] = f"Figure {temp_fig_nr2}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (2/3)"
                 par_formatter(paragraphs7)
                 document.add_picture(f"./static/images/fig{temp_fig_nr2}.png", width=Cm(15))
                 # Add a page break
                 document.add_page_break()
-                paragraphs8['1 cp'] = f"Figure {temp_fig_nr3}: Projects and Capital Demand per {SpatialFeatureChoice} (3/3)"
+                paragraphs8['1 cp'] = f"Figure {temp_fig_nr3}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (3/3)"
                 par_formatter(paragraphs8)
                 document.add_picture(f"./static/images/fig{temp_fig_nr3}.png", width=Cm(15))
     elif number_of_plots == 4:
@@ -515,35 +561,26 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 fig[temp_fig_nr4].write_image(f"./static/images/fig{temp_fig_nr4}.png")
                 # Add a page break
                 document.add_page_break()
-                paragraphs6['1 cp'] = f"Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice} (1/4)"
+                paragraphs6['1 cp'] = f"Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (1/4)"
                 par_formatter(paragraphs6)
                 document.add_picture(f"./static/images/fig{temp_fig_nr1}.png", width=Cm(15))
                 # Add a page break
                 document.add_page_break()
-                paragraphs7['1 cp'] = f"Figure {temp_fig_nr2}: Projects and Capital Demand per {SpatialFeatureChoice} (2/4)"
+                paragraphs7['1 cp'] = f"Figure {temp_fig_nr2}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (2/4)"
                 par_formatter(paragraphs7)
                 document.add_picture(f"./static/images/fig{temp_fig_nr2}.png", width=Cm(15))
                 # Add a page break
                 document.add_page_break()
-                paragraphs8['1 cp'] = f"Figure {temp_fig_nr3}: Projects and Capital Demand per {SpatialFeatureChoice} (3/4)"
+                paragraphs8['1 cp'] = f"Figure {temp_fig_nr3}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (3/4)"
                 par_formatter(paragraphs8)
                 document.add_picture(f"./static/images/fig{temp_fig_nr3}.png", width=Cm(15))
                 # Add a page break
                 document.add_page_break()
-                paragraphs9['1 cp'] = f"Figure {temp_fig_nr4}: Projects and Capital Demand per {SpatialFeatureChoice} (4/4)"
+                paragraphs9['1 cp'] = f"Figure {temp_fig_nr4}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (4/4)"
                 par_formatter(paragraphs9)
                 document.add_picture(f"./static/images/fig{temp_fig_nr4}.png", width=Cm(15))
 
     fig_nr += 1
-
-    # Add a Page with General Information regarding the Municipality
-    # document.add_heading(heading_1, level=1)
-    # document.add_heading(heading1_1, level=2)
-
-    #table = document.add_table(rows=1, cols=2, style='Light Grid Accent 1')
-    #heading_cells = table.rows[0].cells
-    #heading_cells[0].text = 'Description'
-    #heading_cells[1].text = 'Info'
 
 
     full_path = f"./DOWNLOAD_FOLDER/{word_file_name}"
