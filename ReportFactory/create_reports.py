@@ -121,6 +121,10 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     chosen_feature_qty = var_dict['chosen_feature_qty']
 
     SpatialFeatureChoice_Text = SpatialFeatureChoice.replace("_","")
+    if SpatialFeatureChoice_Text[-1].lower() == 's':
+        SpatialFeatureChoice_Text_Single = SpatialFeatureChoice_Text[:-1]
+    else:
+        SpatialFeatureChoice_Text_Single = SpatialFeatureChoice_Text
 
 
     # Set up other vars
@@ -306,10 +310,11 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     heading_cells[3].text = 'Info (3)'
 
     cells = table.add_row().cells
-    cells[0].text = f"The total number of projects in all {SpatialFeatureChoice_Text}"
-    cells[1].text = f"{sum_projects} projects"
-    cells[2].text = ""
-    cells[3].text = ""
+    cells[0].text = f"Number of projects in all {SpatialFeatureChoice_Text} - Overview"
+    cells[1].text = f"Total in all {SpatialFeatureChoice_Text}:\n{sum_projects} projects"
+    cells[2].text = f"Average per {SpatialFeatureChoice_Text}:\n{'{0:.3g}'.format(average_projects)} projects"
+    cells[3].text = f"75th percentile of projects across all {SpatialFeatureChoice_Text}:\n{seventy_fifth_projects} " \
+                    f"projects"
 
     cells = table.add_row().cells
     cells[0].text = f"The highest number of projects"
@@ -330,18 +335,6 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         cells[2].text = f"Number of projects in {top_five_projfeat_text} together:\n{sum_top_five_projects}"
         cells[3].text = f"Percentage of total in {top_five_projfeat_text} together:\n{sum_top_five_projects_perc_of_total}"
 
-    cells = table.add_row().cells
-    cells[0].text = f"The average number of projects per {SpatialFeatureChoice_Text}"
-    cells[1].text = f"{'{0:.3g}'.format(average_projects)} projects"
-    cells[2].text = ""
-    cells[3].text = ""
-
-    cells = table.add_row().cells
-    cells[0].text = f"The 75th percentile of projects of {SpatialFeatureChoice_Text}"
-    cells[1].text = f"{seventy_fifth_projects} projects"
-    cells[2].text = ""
-    cells[3].text = ""
-
     paragraphs5b = {}
     paragraphs5b['1 cp'] = f"Table {tbl_nr}.2: {SpatialFeatureChoice_Text} Analysis - Capital Demand (R)"
     par_formatter(paragraphs5b)
@@ -354,10 +347,10 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     heading_cells[3].text = 'Info (3)'
 
     cells = table.add_row().cells
-    cells[0].text = f"The total capital demand in all {SpatialFeatureChoice_Text}:\n"
-    cells[1].text = f"{sum_cost}"
-    cells[2].text = ""
-    cells[3].text = ""
+    cells[0].text = f"Capital demand in all {SpatialFeatureChoice_Text} - Overview"
+    cells[1].text = f"Total capital demand in all {SpatialFeatureChoice_Text}:\n{sum_cost}"
+    cells[2].text = f"The average capital demand per {SpatialFeatureChoice_Text}:\n{average_cost}"
+    cells[3].text = f"The 75th percentile of capital demand for {SpatialFeatureChoice_Text}:\n{seventy_fifth_cost}"
 
     cells = table.add_row().cells
     cells[0].text = f"The highest capital demand"
@@ -378,26 +371,16 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         cells[2].text = f"Capital Demand in {top_five_capfeat_text} together:\n{sum_top_five_cost}"
         cells[3].text = f"Percentage of total in {top_five_capfeat_text} together:\n{sum_top_five_cost_perc_of_total}"
 
-    cells = table.add_row().cells
-    cells[0].text = f"The average capital demand per {SpatialFeatureChoice_Text}:"
-    cells[1].text = f"{average_cost}"
-    cells[2].text = ""
-    cells[3].text = ""
-
-    cells = table.add_row().cells
-    cells[0].text = f"The 75th percentile of capital demand for {SpatialFeatureChoice_Text}:"
-    cells[1].text = f"{seventy_fifth_cost}"
-    cells[2].text = ""
-    cells[3].text = ""
 
     tbl_nr += 1
 
     paragraphs5c = {}
+
     if chosen_feature_qty > 10:
-        paragraphs5c['1 cp'] = f"Figure {fig_nr}.1: The single highest {SpatialFeatureChoice_Text} (Nr of Projects" \
+        paragraphs5c['1 cp'] = f"Figure {fig_nr}.1: The single {SpatialFeatureChoice_Text_Single} with the highest value (Nr of Projects" \
                            f" & Capital Demand) vs the rest"
     else:
-        paragraphs5c['1 cp'] = f"Figure {fig_nr}: The single highest {SpatialFeatureChoice_Text} (Nr of Projects" \
+        paragraphs5c['1 cp'] = f"Figure {fig_nr}: The single {SpatialFeatureChoice_Text_Single} with the highest value (Nr of Projects" \
                            f" & Capital Demand) vs the rest"
     par_formatter(paragraphs5c)
 
