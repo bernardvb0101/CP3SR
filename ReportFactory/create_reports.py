@@ -155,28 +155,28 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
 
 
     # Create variables about the costs
-    maximum_cost_float = df_EntireSet['Capital Demand'].max()
+    maximum_cost_float = df_EntireSet['Capital All Years'].max()
     maximum_cost = format_budget(maximum_cost_float)
     maximum_cost_feature = \
-    df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].max(), f'{SpatialFeatureChoice}'].iloc[0]
-    minimum_cost_float = df_EntireSet['Capital Demand'].min()
+    df_EntireSet.loc[df_EntireSet['Capital All Years'] == df_EntireSet['Capital All Years'].max(), f'{SpatialFeatureChoice}'].iloc[0]
+    minimum_cost_float = df_EntireSet['Capital All Years'].min()
     minimum_cost = format_budget(minimum_cost_float)
     minimum_cost_feature = \
-        df_EntireSet.loc[df_EntireSet['Capital Demand'] == df_EntireSet['Capital Demand'].min(), f'{SpatialFeatureChoice}'].iloc[
+        df_EntireSet.loc[df_EntireSet['Capital All Years'] == df_EntireSet['Capital All Years'].min(), f'{SpatialFeatureChoice}'].iloc[
             0]
-    average_cost_float = df_EntireSet['Capital Demand'].mean()
+    average_cost_float = df_EntireSet['Capital All Years'].mean()
     average_cost = format_budget(average_cost_float)
-    seventy_fifth_cost_float = df_EntireSet['Capital Demand'].quantile(q=0.75)
+    seventy_fifth_cost_float = df_EntireSet['Capital All Years'].quantile(q=0.75)
     seventy_fifth_cost = format_budget(seventy_fifth_cost_float)
-    sum_cost_float = df_EntireSet['Capital Demand'].sum()
+    sum_cost_float = df_EntireSet['Capital All Years'].sum()
     sum_cost = format_budget(sum_cost_float)
-    max_cost_perc_of_total_float = df_EntireSet['Capital Demand'].max()/df_EntireSet['Capital Demand'].sum()
-    min_cost_perc_of_total_float = df_EntireSet['Capital Demand'].min()/df_EntireSet['Capital Demand'].sum()
+    max_cost_perc_of_total_float = df_EntireSet['Capital All Years'].max()/df_EntireSet['Capital All Years'].sum()
+    min_cost_perc_of_total_float = df_EntireSet['Capital All Years'].min()/df_EntireSet['Capital All Years'].sum()
     max_cost_perc_of_total = format_percent(max_cost_perc_of_total_float)
     min_cost_perc_of_total = format_percent(min_cost_perc_of_total_float)
     # Re-sort the df to get the top 5 capital demand
-    df_EntireSet_Temp.sort_values('Capital Demand', inplace=True, ascending=True)
-    sum_top_five_cost_float = df_EntireSet_Temp['Capital Demand'].tail().sum()
+    df_EntireSet_Temp.sort_values('Capital All Years', inplace=True, ascending=True)
+    sum_top_five_cost_float = df_EntireSet_Temp['Capital All Years'].tail().sum()
     sum_top_five_cost = format_budget(sum_top_five_cost_float)
     sum_top_five_cost_perc_of_total_float = sum_top_five_cost_float/sum_cost_float
     sum_top_five_cost_perc_of_total = format_percent(sum_top_five_cost_perc_of_total_float)
@@ -443,7 +443,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
 
     if number_of_plots == 1:
                 fig[fig_nr] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y= SpatialFeatureChoice,
-                            color='Capital Demand',
+                            color='Capital All Years',
                             height=900, orientation='h')
                 # Sort images to follow each other
                 fig[fig_nr].update_yaxes(categoryorder='total descending')
@@ -458,10 +458,10 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 temp_fig_nr1 = f"{fig_nr}.1"
                 temp_fig_nr2 = f"{fig_nr}.2"
                 fig[temp_fig_nr1] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                            color='Capital Demand',
+                            color='Capital All Years',
                             height=900, orientation='h')
                 fig[temp_fig_nr2] = px.bar(df_subset2, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital Demand',
+                                color='Capital All Years',
                                 height=900, orientation='h')
                 # Sort images to follow each other
                 fig[temp_fig_nr1].update_yaxes(categoryorder='total descending')
@@ -484,13 +484,13 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 temp_fig_nr2 = f"{fig_nr}.2"
                 temp_fig_nr3 = f"{fig_nr}.3"
                 fig[temp_fig_nr1] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                            color='Capital Demand',
+                            color='Capital All Years',
                             height=900, orientation='h')
                 fig[temp_fig_nr2] = px.bar(df_subset2, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital Demand',
+                                color='Capital All Years',
                                 height=900, orientation='h')
                 fig[temp_fig_nr3] = px.bar(df_subset3, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital Demand',
+                                color='Capital All Years',
                                 height=900, orientation='h')
                 # Sort images to follow each other
                 fig[temp_fig_nr1].update_yaxes(categoryorder='total descending')
@@ -521,16 +521,16 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 temp_fig_nr3 = f"{fig_nr}.3"
                 temp_fig_nr4 = f"{fig_nr}.4"
                 fig[temp_fig_nr1] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                            color='Capital Demand',
+                            color='Capital All Years',
                             height=900, orientation='h')
                 fig[temp_fig_nr2] = px.bar(df_subset2, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital Demand',
+                                color='Capital All Years',
                                 height=900, orientation='h')
                 fig[temp_fig_nr3] = px.bar(df_subset3, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital Demand',
+                                color='Capital All Years',
                                 height=900, orientation='h')
                 fig[temp_fig_nr4] = px.bar(df_subset4, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital Demand',
+                                color='Capital All Years',
                                 height=900)
                 # Sort images to follow each other
                 fig[temp_fig_nr1].update_yaxes(categoryorder='total descending')

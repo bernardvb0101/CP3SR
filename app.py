@@ -5,6 +5,7 @@ from Utilities.url_exists import URL_exists
 from Utilities.control_growth import control_growth_of_docx
 from Utilities.get_url_vars import vars_from_json_file
 from Utilities.get_API_vars import API_vars_json_file
+from Utilities.create_sub_dfs import return_frames
 from CP3_API_calls.Create_API_Variables import create_vars
 from CP3_API_calls.BaselineCatalogue import baseline_catalogue
 from CP3_API_calls.ProjectCatalogue import ProjectCatalogue
@@ -216,9 +217,10 @@ def home():
                     list_of_features = list(df_MapServiceIntersections['FeatureClassName'].unique())
                     # Remove 'no intersect' because they have no spatial property and the overwhelm ito numbers in many datasets
                     list_of_features.remove('No Intersect')
+                    # Create a list for all the fin years in the system
+                    list_of_years = list(df_CapexBudgetDemandCatalogue['Interval'].unique())
+                    list_of_years = sorted(list_of_years)
                     # This variable stores how many of the chosen feature there is
-                    # *******************************************************************************************************
-                    # This variable gets created to understand how many features will be discplayed
                     chosen_feature_qty = len(list_of_features)
                     # Initialise the master dictionary
                     feature_intersect_dict = {}
@@ -232,46 +234,90 @@ def home():
                             project_dict[row.ProjectId] = row.PercentageIntersect
                         feature_intersect_dict[feature] = project_dict
                     # Now this dictionary can be used to query spatial feature to get to the projects and their intersects.
-                    # print(feature_intersect_dict['Ward 100'])
+                    # print(feature_intersect_dict['Ward 100']) -> All projects in a ward is given with their % intersect
 
-                    # Put this entire dictionary in a dataframe
-                    # this dataaframe contains
+                    # Put this entire dictionary in a dataframe. Projects with their %Intersect per ChosenSpatialFeature
                     df_FeatureIntersectPer = pd.DataFrame(feature_intersect_dict)
                     # Replace all the NaN's with zeros
                     df_FeatureIntersectPer.replace(np.nan, 0, inplace=True)
 
-                    # Also, Create a 2 lists with 1) the number of projects per spatial feature and 2) the budget per spatial feature
-                    list_nr = []
-                    list_cost = []
+                    # Create a modified df_CapexBudgetDemandCatalogue by combining it with df_MapServiceIntersections
+                    df_CapexBudgetDemandCatalogue2 = df_CapexBudgetDemandCatalogue.merge(df_MapServiceIntersections,
+                                                                                         on='ProjectId')
+                    # Add a column ('CapExDemand') for the 'Amount' multiplied by the 'PercentageIntersect'
+                    df_CapexBudgetDemandCatalogue2["CapExDemand"] = df_CapexBudgetDemandCatalogue2["Amount"] * \
+                                                                    df_CapexBudgetDemandCatalogue2[
+                                                                        "PercentageIntersect"]
+
+                    # ********************************************************************************************
+                    # Build df_EntireSet with columns for each fin year
+                    # 1) Chosen Feature 2) No of Projs in Chosen Feature 3) Total Capital Demand in Chosen Feature 4) Capital Demand in Chosen Feature per Year
+                    list_nr = []  # List with number of projects in a ward
+                    list_cost = {}  # list_cost[2022], etc
+                    list_cost['Total'] = []
+                    for year in list_of_years:
+                        list_cost[year] = []
+                    mask3_dict = {}
+                    # There will bae a dataframe for each mask for each year
+                    df_mask3_dict = {}  # The will be a dataframe for each year so they will be store in a dictionary
+                    df_perward = {}
+                    project_year_total = {}
+
                     for feature in list_of_features:
-                        # Create the list containing how many project per wards are there
+                        # The number of project per chosen spatial feature goes into the 'list_nr' list
                         list_nr.append(len(
                             df_MapServiceIntersections[df_MapServiceIntersections['FeatureClassName'] == feature][
                                 'ProjectId']))
-                        # Create a list of the total budget per ward asked
+                        # Now get the list of projects within the chosen feature (per feature)
+                        df_perward[feature] = df_FeatureIntersectPer[df_FeatureIntersectPer[feature] > 0][feature]
+                        # Set the variables that will keep track of the budget per spatial feature to zero
+                        project_total = 0
+                        for year in list_of_years:
+                            project_year_total[year] = 0
 
-                        # Before you determine the subtotat for that spatial feature, reset the sub_total variable to 0
-                        sub_total = 0
-                        # iterate over the sub-dictionaries
-                        for key, value in feature_intersect_dict[feature].items():
-                            # Get the budget of each project and multiply with the % overlap
-                            try:
-                                sub_total += df_CapexBudgetDemandCatalogue.loc[
-                                                 df_CapexBudgetDemandCatalogue['ProjectId'] == key, 'Amount'].iloc[
-                                                 0] * value
-                            except IndexError:  # There is no budget demand for this project
-                                pass
-                        # Now this total can be added to the list
-                        list_cost.append(sub_total)
+                        # Now iterate through the project numbers
+                        for index in df_perward[feature].index:  # 'index' is the project number
+                            # The 'df_perward[feature]' ensures the project exist in that ward
+                            # Create a mask for the project number represented by 'index'
+                            mask1 = df_CapexBudgetDemandCatalogue2['ProjectId'] == index  # Mask per project
+                            df_mask1 = df_CapexBudgetDemandCatalogue2[
+                                mask1]  # A dataframe for that mask for just that project ('index')
+
+                            # mask 2 is the chosen spatial feature - we must have this mask because a project may be in more than one
+                            # spatial feature as returned by mask 1 which is the specific project mask
+                            mask2 = df_mask1[
+                                        'FeatureClassName'] == feature  # Mask per spatial feature inside the project df
+                            df_mask2 = df_mask1[
+                                mask2]  # A dataframe for mask2 - so now its is reduced to a specific project and spatial feature
+
+                            # mask3 is for s specific year
+                            for year in list_of_years:
+                                mask3_dict[year] = df_mask2['Interval'] == year  # There is a mask for each year
+                                df_mask3_dict[year] = df_mask2[mask3_dict[
+                                    year]]  # Create a dataframe for each year 1) Project -> 2) SPatial Feature -> 3) Year
+                                try:
+                                    project_year_total[year] += float(df_mask3_dict[year]['CapExDemand'].iloc[0])
+                                    project_total += float(df_mask3_dict[year]['CapExDemand'].iloc[0])
+                                except IndexError:  # If there is no year, an index error is returned. The populate the list with a zero.
+                                    project_year_total[year] += 0
+                                    project_total += 0
+
+                        list_cost['Total'].append(project_total)
+                        for year in list_of_years:
+                            list_cost[year].append(project_year_total[year])
+
                     # With these lists a new dataframe can be created to plot
                     # Thus, create a dataframe/dataframes containing all the spatial feautures selected, each containing the
                     # number of projects in that feature and the capital demand per that feature
                     # Decide on the number of data sets depending on the size of the data
 
-                    # 1st Create Dataset of all the data to split up for grpahing purposes
+                    # 1st Create Dataset of all the data to split up for graphing purposes
                     df_EntireSet = pd.DataFrame(
                         {SpatialFeatureChoice: list_of_features, f'Projects per {SpatialFeatureChoice}': list_nr,
-                         f'Capital Demand': list_cost})
+                         f'Capital All Years': list_cost['Total']})
+                    for year in list_of_years:
+                        df_EntireSet[f'Capital {year}'] = list_cost[year]
+
                     # Now sort the dataset in order of number of projects from largest to smallest
                     df_EntireSet.sort_values(f'Projects per {SpatialFeatureChoice}', inplace=True, ascending=True)
                     """
@@ -281,34 +327,29 @@ def home():
                     1	Ward 66	                8	                                1.557022e+0
                     ...
                     """
-                    # The splitting of the df_EntireSet dataframe will happen below, depending on 'number_of_plots' variable
-                    if chosen_feature_qty <= 40:  # Only one dataset
-                        number_of_plots = 1
-                        df_subset1 = df_EntireSet
+                    # Split the data frames
+                    df_subs = return_frames(df_EntireSet, chosen_feature_qty, 40)
+                    number_of_plots = len(df_subs)
+                    if number_of_plots == 1:
+                        df_subset1 = df_subs[0]
                         df_subset2 = {}
                         df_subset3 = {}
                         df_subset4 = {}
-                    elif chosen_feature_qty > 40 and chosen_feature_qty <= 80:  # Create 2 data sets
-                        number_of_plots = 2
-                        dfs = np.array_split(df_EntireSet, number_of_plots)
-                        df_subset1 = dfs[0]
-                        df_subset2 = dfs[1]
+                    elif number_of_plots == 2:
+                        df_subset1 = df_subs[0]
+                        df_subset2 = df_subs[1]
                         df_subset3 = {}
                         df_subset4 = {}
-                    elif chosen_feature_qty > 80 and chosen_feature_qty <= 120:  # Create 3 data sets
-                        number_of_plots = 3
-                        dfs = np.array_split(df_EntireSet, number_of_plots)
-                        df_subset1 = dfs[0]
-                        df_subset2 = dfs[1]
-                        df_subset3 = dfs[2]
+                    elif number_of_plots == 3:
+                        df_subset1 = df_subs[0]
+                        df_subset2 = df_subs[1]
+                        df_subset3 = df_subs[2]
                         df_subset4 = {}
-                    else:  # Create 4 plots
-                        number_of_plots = 4
-                        dfs = np.array_split(df_EntireSet, number_of_plots)
-                        df_subset1 = dfs[0]
-                        df_subset2 = dfs[1]
-                        df_subset3 = dfs[2]
-                        df_subset4 = dfs[3]
+                    elif number_of_plots == 3:
+                        df_subset1 = df_subs[0]
+                        df_subset2 = df_subs[1]
+                        df_subset3 = df_subs[2]
+                        df_subset4 = df_subs[3]
 
                     # Wrap all the loose variables in a dictionary for use in the report
                     var_dict = {}
