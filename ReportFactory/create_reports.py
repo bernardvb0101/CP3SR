@@ -8,8 +8,7 @@ from docx.shared import Cm
 from datetime import datetime
 
 
-def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_subset1, df_subset2, df_subset3,
-                   df_subset4, number_of_plots, df_EntireSet):
+def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_subs, number_of_plots, df_EntireSet):
     """
     This module creates a spatial report in a MSWord File
     """
@@ -72,20 +71,6 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                     document.add_heading(value, level=3)
             elif key == "4":
                     document.add_heading(value, level=4)
-            """
-            match key:
-                case "0":
-                    document.add_heading(value, level=0)
-                case "1":
-                    document.add_heading(value, level=1)
-                case "2":
-                    document.add_heading(value, level=2)
-                case "3":
-                    document.add_heading(value, level=3)
-                case "4":
-                    document.add_heading(value, level=4)
-            """
-
 
     # Put an R in front of the currency and format the amount
     def format_budget(n):
@@ -107,8 +92,34 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         percentage = "{:.2f}%".format(n)
         return percentage
 
+    def build_bar_plots_1(number_of_plots, fig_nr):
+        """
+        This function automates the building of bar plots based on the number of sub_plots required as provided
+        by the parameter 'number_of_plots' which in turn gets created by len(df_subs) under the 'create_sub_dfs'
+        module.
+        """
+        fig_t = {}
+        temp_fig = {}
+        temp_paragraphs = {}
+        for plot_no in range(1, number_of_plots + 1):
+            temp_fig[plot_no] = f"{fig_nr}.{plot_no}"
+            fig_t[plot_no][temp_fig[plot_no]] = px.bar(df_subs[plot_no - 1], x=f'Projects per {SpatialFeatureChoice}',
+                                            y=SpatialFeatureChoice,
+                                            color='Capital All Years',
+                                            height=900, orientation='h')
+            # Sort images to follow each other
+            fig_t[plot_no][temp_fig[plot_no]].update_yaxes(categoryorder='total descending')
+            # Write images to png
+            fig_t[plot_no][temp_fig[plot_no]].write_image(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png")
+            # Add a page break
+            document.add_page_break()
+            temp_paragraphs[plot_no][
+                '1 cp'] = f"Figure {temp_fig[plot_no]}: Projects and Capital Demand per {SpatialFeatureChoice_Text} ({plot_no}/4)"
+            par_formatter(temp_paragraphs[plot_no]['1 cp'])
+            document.add_picture(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png", width=Cm(15))
 
-    # Unpack the variables that were passed to the function in a dictionary called var_dict
+
+            # Unpack the variables that were passed to the function in a dictionary called var_dict
     sys_username = var_dict['username']
     url_choice = var_dict['url_choice']
     entity_choice = var_dict['entity_choice']
@@ -406,6 +417,18 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     if chosen_feature_qty < 11:  # If >10, it will be incremented in the next step, not now
         fig_nr += 1
 
+    paragraphs6 = {}
+    paragraphs6['1 xx'] = f"The highest number of projects in a single {SpatialFeatureChoice_Text} is in "
+    paragraphs6['2 b'] = f"{maximum_projects_feature}. "
+    paragraphs6['3 i'] = f"- That is {maximum_projects} and this is {max_projects_perc_of_total} projects of the total " \
+                         f"number of projects."
+    paragraphs6['4 xx'] = f"The highest capital demand in a single {SpatialFeatureChoice_Text} is in "
+    paragraphs6['5 b'] = f"{maximum_cost_feature}. "
+    paragraphs6['6 i'] = f"- That is {maximum_cost} and this amounts to {max_cost_perc_of_total} of the total " \
+                         f"capital demand."
+
+    par_formatter(paragraphs6)
+
 
     if chosen_feature_qty > 10:
         paragraphs5d = {}
@@ -419,10 +442,10 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         # Create subplots: use 'domain' type for Pie subplot
         fig[fig_nr] = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
         fig[fig_nr].add_trace(go.Pie(labels=labels, values=[sum_top_five_projects, (sum_projects - sum_top_five_projects)],
-                                     name="Nr of Projs"), 1, 1)
+                                     name="Nr of Projs"), row=1, col=1)
         fig[fig_nr].add_trace(
             go.Pie(labels=labels, values=[sum_top_five_cost_float, (sum_cost_float - sum_top_five_cost_float)],
-                   name="Cap Dem (R)"), 1, 2)
+                   name="Cap Dem (R)"), row=1, col=2)
         # Use `hole` to create a donut-like pie chart
         fig[fig_nr].update_traces(hole=.4)
         fig[fig_nr].update_traces(marker=dict(colors=colors, line=dict(color='#000000', width=2)))
@@ -434,13 +457,24 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         document.add_picture(f"./static/images/fig{fig_nr}.2.png", width=Cm(17))
         fig_nr += 1
 
+    if chosen_feature_qty > 10:
+        paragraphs7 = {}
+        paragraphs7['1 xx'] = f"The 5 {SpatialFeatureChoice_Text} that collectively have with the highest number of " \
+                              f"projects are in "
+        paragraphs7['2 b'] = f"{top_five_projfeat_text}. "
+        paragraphs7['3 i'] = f"- That is {sum_top_five_projects} and this is {sum_top_five_projects_perc_of_total} projects of the total " \
+                             f"number of projects."
+        paragraphs7['4 xx'] = f"The 5 {SpatialFeatureChoice_Text} that collectively have collective the highest capital " \
+                              f"demand are in "
+        paragraphs7['5 b'] = f"{top_five_capfeat_text}. "
+        paragraphs7['6 i'] = f"- That is {sum_top_five_cost_perc_of_total} and this amounts to {sum_top_five_cost} of the total " \
+                             f"capital demand."
 
-    paragraphs6 ={}
-    paragraphs7 = {}
-    paragraphs8 = {}
-    paragraphs9 = {}
+        par_formatter(paragraphs7)
 
+    build_bar_plots_1(number_of_plots=number_of_plots, fig_nr=fig_nr)
 
+    """
     if number_of_plots == 1:
                 fig[fig_nr] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y= SpatialFeatureChoice,
                             color='Capital All Years',
@@ -502,7 +536,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 fig[temp_fig_nr3].write_image(f"./static/images/fig{temp_fig_nr3}.png")
                 # Add a page break
                 document.add_page_break()
-                paragraphs6['1 cp'] = f"Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (1/3)"
+                Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (1/3)"
                 par_formatter(paragraphs6)
                 document.add_picture(f"./static/images/fig{temp_fig_nr1}.png", width=Cm(15))
                 # Add a page break
@@ -562,6 +596,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 paragraphs9['1 cp'] = f"Figure {temp_fig_nr4}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (4/4)"
                 par_formatter(paragraphs9)
                 document.add_picture(f"./static/images/fig{temp_fig_nr4}.png", width=Cm(15))
+    """
 
     fig_nr += 1
 

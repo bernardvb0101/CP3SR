@@ -328,28 +328,9 @@ def home():
                     ...
                     """
                     # Split the data frames
-                    df_subs = return_frames(df_EntireSet, chosen_feature_qty, 40)
+                    df_subs = return_frames(df_Master=df_EntireSet, feature_qty=chosen_feature_qty, block_limit=40,
+                                            sort_column=f'Projects per {SpatialFeatureChoice}')
                     number_of_plots = len(df_subs)
-                    if number_of_plots == 1:
-                        df_subset1 = df_subs[0]
-                        df_subset2 = {}
-                        df_subset3 = {}
-                        df_subset4 = {}
-                    elif number_of_plots == 2:
-                        df_subset1 = df_subs[0]
-                        df_subset2 = df_subs[1]
-                        df_subset3 = {}
-                        df_subset4 = {}
-                    elif number_of_plots == 3:
-                        df_subset1 = df_subs[0]
-                        df_subset2 = df_subs[1]
-                        df_subset3 = df_subs[2]
-                        df_subset4 = {}
-                    elif number_of_plots == 3:
-                        df_subset1 = df_subs[0]
-                        df_subset2 = df_subs[1]
-                        df_subset3 = df_subs[2]
-                        df_subset4 = df_subs[3]
 
                     # Wrap all the loose variables in a dictionary for use in the report
                     var_dict = {}
@@ -369,8 +350,7 @@ def home():
                     # Now create the spatial feature report
                     path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict,
                                           df_project_cat=df_ProjectCatalogue, df_intersects2=df_Intersects2,
-                                          df_subset1=df_subset1, df_subset2=df_subset2, df_subset3=df_subset3,
-                                          df_subset4=df_subset4, number_of_plots=number_of_plots,
+                                          df_subs=df_subs, number_of_plots=number_of_plots,
                                           df_EntireSet=df_EntireSet)
                     return send_file(path, as_attachment=True)
                 else:
