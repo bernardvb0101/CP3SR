@@ -100,9 +100,10 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         """
         fig_t = {}
         temp_fig = {}
-        temp_paragraphs = {}
+
         for plot_no in range(1, number_of_plots + 1):
             temp_fig[plot_no] = f"{fig_nr}.{plot_no}"
+            fig_t[plot_no] = {}
             fig_t[plot_no][temp_fig[plot_no]] = px.bar(df_subs[plot_no - 1], x=f'Projects per {SpatialFeatureChoice}',
                                             y=SpatialFeatureChoice,
                                             color='Capital All Years',
@@ -113,9 +114,11 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
             fig_t[plot_no][temp_fig[plot_no]].write_image(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png")
             # Add a page break
             document.add_page_break()
-            temp_paragraphs[plot_no][
-                '1 cp'] = f"Figure {temp_fig[plot_no]}: Projects and Capital Demand per {SpatialFeatureChoice_Text} ({plot_no}/4)"
-            par_formatter(temp_paragraphs[plot_no]['1 cp'])
+            temp_paragraphs = {}
+            temp_paragraphs[
+                f'{plot_no} cp'] = f"Figure {temp_fig[plot_no]}: Projects and Capital Demand per " \
+                                   f"{SpatialFeatureChoice_Text} ({plot_no}/{number_of_plots})"
+            par_formatter(temp_paragraphs)
             document.add_picture(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png", width=Cm(15))
 
 
@@ -418,13 +421,13 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         fig_nr += 1
 
     paragraphs6 = {}
-    paragraphs6['1 xx'] = f"The highest number of projects in a single {SpatialFeatureChoice_Text} is in "
+    paragraphs6['1 n'] = f"The highest number of projects in a single {SpatialFeatureChoice_Text} is in "
     paragraphs6['2 b'] = f"{maximum_projects_feature}. "
-    paragraphs6['3 i'] = f"- That is {maximum_projects} and this is {max_projects_perc_of_total} projects of the total " \
+    paragraphs6['3 i'] = f"That is {maximum_projects} projects and this is {max_projects_perc_of_total} of the total " \
                          f"number of projects."
-    paragraphs6['4 xx'] = f"The highest capital demand in a single {SpatialFeatureChoice_Text} is in "
+    paragraphs6['4 n'] = f"The highest capital demand in a single {SpatialFeatureChoice_Text} is in "
     paragraphs6['5 b'] = f"{maximum_cost_feature}. "
-    paragraphs6['6 i'] = f"- That is {maximum_cost} and this amounts to {max_cost_perc_of_total} of the total " \
+    paragraphs6['6 i'] = f"That is {maximum_cost} and this amounts to {max_cost_perc_of_total} of the total " \
                          f"capital demand."
 
     par_formatter(paragraphs6)
@@ -459,144 +462,21 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
 
     if chosen_feature_qty > 10:
         paragraphs7 = {}
-        paragraphs7['1 xx'] = f"The 5 {SpatialFeatureChoice_Text} that collectively have with the highest number of " \
+        paragraphs7['1 n'] = f"The 5 {SpatialFeatureChoice_Text} that collectively have with the highest number of " \
                               f"projects are in "
         paragraphs7['2 b'] = f"{top_five_projfeat_text}. "
-        paragraphs7['3 i'] = f"- That is {sum_top_five_projects} and this is {sum_top_five_projects_perc_of_total} projects of the total " \
+        paragraphs7['3 i'] = f"That is {sum_top_five_projects} projects and this is " \
+                             f"{sum_top_five_projects_perc_of_total} of the total " \
                              f"number of projects."
-        paragraphs7['4 xx'] = f"The 5 {SpatialFeatureChoice_Text} that collectively have collective the highest capital " \
-                              f"demand are in "
+        paragraphs7['4 n'] = f"The 5 {SpatialFeatureChoice_Text} that collectively have the highest " \
+                             f"capital demand are in "
         paragraphs7['5 b'] = f"{top_five_capfeat_text}. "
-        paragraphs7['6 i'] = f"- That is {sum_top_five_cost_perc_of_total} and this amounts to {sum_top_five_cost} of the total " \
+        paragraphs7['6 i'] = f"That is {sum_top_five_cost_perc_of_total} and this amounts to {sum_top_five_cost} of the total " \
                              f"capital demand."
 
         par_formatter(paragraphs7)
 
     build_bar_plots_1(number_of_plots=number_of_plots, fig_nr=fig_nr)
-
-    """
-    if number_of_plots == 1:
-                fig[fig_nr] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y= SpatialFeatureChoice,
-                            color='Capital All Years',
-                            height=900, orientation='h')
-                # Sort images to follow each other
-                fig[fig_nr].update_yaxes(categoryorder='total descending')
-                # Write images to png
-                fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
-                # Add a page break
-                document.add_page_break()
-                paragraphs6['1 cp'] = f"Figure {fig_nr}: Projects and Capital Demand per {SpatialFeatureChoice_Text}"
-                par_formatter(paragraphs6)
-                document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(15))
-    elif number_of_plots == 2:
-                temp_fig_nr1 = f"{fig_nr}.1"
-                temp_fig_nr2 = f"{fig_nr}.2"
-                fig[temp_fig_nr1] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                            color='Capital All Years',
-                            height=900, orientation='h')
-                fig[temp_fig_nr2] = px.bar(df_subset2, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital All Years',
-                                height=900, orientation='h')
-                # Sort images to follow each other
-                fig[temp_fig_nr1].update_yaxes(categoryorder='total descending')
-                fig[temp_fig_nr2].update_yaxes(categoryorder='total descending')
-                # Write images to png
-                fig[temp_fig_nr1].write_image(f"./static/images/fig{temp_fig_nr1}.png")
-                fig[temp_fig_nr2].write_image(f"./static/images/fig{temp_fig_nr2}.png")
-                # Add a page break
-                document.add_page_break()
-                paragraphs6['1 cp'] = f"Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (1/2)"
-                par_formatter(paragraphs6)
-                document.add_picture(f"./static/images/fig{temp_fig_nr1}.png", width=Cm(15))
-                # Add a page break
-                document.add_page_break()
-                paragraphs7['1 cp'] = f"Figure {temp_fig_nr2}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (2/2)"
-                par_formatter(paragraphs7)
-                document.add_picture(f"./static/images/fig{temp_fig_nr2}.png", width=Cm(15))
-    elif number_of_plots == 3:
-                temp_fig_nr1 = f"{fig_nr}.1"
-                temp_fig_nr2 = f"{fig_nr}.2"
-                temp_fig_nr3 = f"{fig_nr}.3"
-                fig[temp_fig_nr1] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                            color='Capital All Years',
-                            height=900, orientation='h')
-                fig[temp_fig_nr2] = px.bar(df_subset2, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital All Years',
-                                height=900, orientation='h')
-                fig[temp_fig_nr3] = px.bar(df_subset3, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital All Years',
-                                height=900, orientation='h')
-                # Sort images to follow each other
-                fig[temp_fig_nr1].update_yaxes(categoryorder='total descending')
-                fig[temp_fig_nr2].update_yaxes(categoryorder='total descending')
-                fig[temp_fig_nr3].update_yaxes(categoryorder='total descending')
-                # Write images to png
-                fig[temp_fig_nr1].write_image(f"./static/images/fig{temp_fig_nr1}.png")
-                fig[temp_fig_nr2].write_image(f"./static/images/fig{temp_fig_nr2}.png")
-                fig[temp_fig_nr3].write_image(f"./static/images/fig{temp_fig_nr3}.png")
-                # Add a page break
-                document.add_page_break()
-                Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (1/3)"
-                par_formatter(paragraphs6)
-                document.add_picture(f"./static/images/fig{temp_fig_nr1}.png", width=Cm(15))
-                # Add a page break
-                document.add_page_break()
-                paragraphs7['1 cp'] = f"Figure {temp_fig_nr2}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (2/3)"
-                par_formatter(paragraphs7)
-                document.add_picture(f"./static/images/fig{temp_fig_nr2}.png", width=Cm(15))
-                # Add a page break
-                document.add_page_break()
-                paragraphs8['1 cp'] = f"Figure {temp_fig_nr3}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (3/3)"
-                par_formatter(paragraphs8)
-                document.add_picture(f"./static/images/fig{temp_fig_nr3}.png", width=Cm(15))
-    elif number_of_plots == 4:
-                temp_fig_nr1 = f"{fig_nr}.1"
-                temp_fig_nr2 = f"{fig_nr}.2"
-                temp_fig_nr3 = f"{fig_nr}.3"
-                temp_fig_nr4 = f"{fig_nr}.4"
-                fig[temp_fig_nr1] = px.bar(df_subset1, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                            color='Capital All Years',
-                            height=900, orientation='h')
-                fig[temp_fig_nr2] = px.bar(df_subset2, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital All Years',
-                                height=900, orientation='h')
-                fig[temp_fig_nr3] = px.bar(df_subset3, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital All Years',
-                                height=900, orientation='h')
-                fig[temp_fig_nr4] = px.bar(df_subset4, x=f'Projects per {SpatialFeatureChoice}', y=SpatialFeatureChoice,
-                                color='Capital All Years',
-                                height=900)
-                # Sort images to follow each other
-                fig[temp_fig_nr1].update_yaxes(categoryorder='total descending')
-                fig[temp_fig_nr2].update_yaxes(categoryorder='total descending')
-                fig[temp_fig_nr3].update_yaxes(categoryorder='total descending')
-                fig[temp_fig_nr4].update_yaxes(categoryorder='total descending')
-                # Write images to png
-                fig[temp_fig_nr1].write_image(f"./static/images/fig{temp_fig_nr1}.png")
-                fig[temp_fig_nr2].write_image(f"./static/images/fig{temp_fig_nr2}.png")
-                fig[temp_fig_nr3].write_image(f"./static/images/fig{temp_fig_nr3}.png")
-                fig[temp_fig_nr4].write_image(f"./static/images/fig{temp_fig_nr4}.png")
-                # Add a page break
-                document.add_page_break()
-                paragraphs6['1 cp'] = f"Figure {temp_fig_nr1}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (1/4)"
-                par_formatter(paragraphs6)
-                document.add_picture(f"./static/images/fig{temp_fig_nr1}.png", width=Cm(15))
-                # Add a page break
-                document.add_page_break()
-                paragraphs7['1 cp'] = f"Figure {temp_fig_nr2}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (2/4)"
-                par_formatter(paragraphs7)
-                document.add_picture(f"./static/images/fig{temp_fig_nr2}.png", width=Cm(15))
-                # Add a page break
-                document.add_page_break()
-                paragraphs8['1 cp'] = f"Figure {temp_fig_nr3}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (3/4)"
-                par_formatter(paragraphs8)
-                document.add_picture(f"./static/images/fig{temp_fig_nr3}.png", width=Cm(15))
-                # Add a page break
-                document.add_page_break()
-                paragraphs9['1 cp'] = f"Figure {temp_fig_nr4}: Projects and Capital Demand per {SpatialFeatureChoice_Text} (4/4)"
-                par_formatter(paragraphs9)
-                document.add_picture(f"./static/images/fig{temp_fig_nr4}.png", width=Cm(15))
-    """
 
     fig_nr += 1
 
