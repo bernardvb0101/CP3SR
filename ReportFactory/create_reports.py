@@ -137,6 +137,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
                                                              x=column_name_list,
                                                              nbins=len(df_subs[plot_no - 1]), height=1500, width=1100,
                                                              orientation='h')
+            fig_t[plot_no][temp_fig[plot_no]].update_yaxes(categoryorder='total descending')
             fig_t[plot_no][temp_fig[plot_no]].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
             fig_t[plot_no][temp_fig[plot_no]].update_layout(barmode='stack')
             # Write images to png
@@ -167,6 +168,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
                                                              x=column_name_list[0:3],
                                                              nbins=len(df_subs[plot_no - 1]), height=1500, width=1100,
                                                              orientation='h')
+            fig_t[plot_no][temp_fig[plot_no]].update_yaxes(categoryorder='total descending')
             fig_t[plot_no][temp_fig[plot_no]].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
             fig_t[plot_no][temp_fig[plot_no]].update_layout(barmode='stack')
             # Write images to png
