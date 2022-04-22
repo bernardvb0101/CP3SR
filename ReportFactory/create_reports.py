@@ -1,14 +1,13 @@
-# import os
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from docx import Document
 from docx.shared import Cm
-# from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from datetime import datetime
+from Utilities.create_sub_dfs import return_frames
 
 
-def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_subs, number_of_plots, df_EntireSet):
+def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_EntireSet):
     """
     This module creates a spatial report in a MSWord File
     """
@@ -107,9 +106,10 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
             fig_t[plot_no][temp_fig[plot_no]] = px.bar(df_subs[plot_no - 1], x=f'Projects per {SpatialFeatureChoice}',
                                             y=SpatialFeatureChoice,
                                             color='Capital All Years',
-                                            height=900, orientation='h')
+                                            height=1500, width=1100, orientation='h')
             # Sort images to follow each other
             fig_t[plot_no][temp_fig[plot_no]].update_yaxes(categoryorder='total descending')
+            fig_t[plot_no][temp_fig[plot_no]].update_coloraxes(colorbar_tickprefix='R', colorbar_tickformat=',.')
             # Write images to png
             fig_t[plot_no][temp_fig[plot_no]].write_image(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png")
             # Add a page break
@@ -119,10 +119,71 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                 f'{plot_no} cp'] = f"Figure {temp_fig[plot_no]}: Projects and Capital Demand per " \
                                    f"{SpatialFeatureChoice_Text} ({plot_no}/{number_of_plots})"
             par_formatter(temp_paragraphs)
-            document.add_picture(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png", width=Cm(15))
+            document.add_picture(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png", width=Cm(16))
+
+    def build_bar_plots_2(number_of_plots, fig_nr):
+        """
+        This function automates the building of bar plots based on the number of sub_plots required as provided
+        by the parameter 'number_of_plots' which in turn gets created by len(df_subs) under the 'create_sub_dfs'
+        module.
+        """
+        fig_t = {}
+        temp_fig = {}
+
+        for plot_no in range(1, number_of_plots + 1):
+            temp_fig[plot_no] = f"{fig_nr}.{plot_no}"
+            fig_t[plot_no] = {}
+            fig_t[plot_no][temp_fig[plot_no]] = px.histogram(df_subs[plot_no - 1], y=SpatialFeatureChoice,
+                                                             x=column_name_list,
+                                                             nbins=len(df_subs[plot_no - 1]), height=1500, width=1100,
+                                                             orientation='h')
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(barmode='stack')
+            # Write images to png
+            fig_t[plot_no][temp_fig[plot_no]].write_image(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png")
+            # Add a page break
+            document.add_page_break()
+            temp_paragraphs = {}
+            temp_paragraphs[
+                f'{plot_no} cp'] = f"Figure {temp_fig[plot_no]}: Capital Demand per {SpatialFeatureChoice_Text} - " \
+                                   f"All Years ({plot_no}/{number_of_plots})"
+            par_formatter(temp_paragraphs)
+            document.add_picture(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png", width=Cm(16))
 
 
-            # Unpack the variables that were passed to the function in a dictionary called var_dict
+    def build_bar_plots_3(number_of_plots, fig_nr):
+        """
+        This function automates the building of bar plots based on the number of sub_plots required as provided
+        by the parameter 'number_of_plots' which in turn gets created by len(df_subs) under the 'create_sub_dfs'
+        module.
+        """
+        fig_t = {}
+        temp_fig = {}
+
+        for plot_no in range(1, number_of_plots + 1):
+            temp_fig[plot_no] = f"{fig_nr}.{plot_no}"
+            fig_t[plot_no] = {}
+            fig_t[plot_no][temp_fig[plot_no]] = px.histogram(df_subs[plot_no - 1], y=SpatialFeatureChoice,
+                                                             x=column_name_list[0:3],
+                                                             nbins=len(df_subs[plot_no - 1]), height=1500, width=1100,
+                                                             orientation='h')
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(barmode='stack')
+            # Write images to png
+            fig_t[plot_no][temp_fig[plot_no]].write_image(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png")
+            # Add a page break
+            document.add_page_break()
+            temp_paragraphs = {}
+            temp_paragraphs[
+                f'{plot_no} cp'] = f"Figure {temp_fig[plot_no]}: Capital Demand per {SpatialFeatureChoice_Text} - " \
+                                   f"MTREF Period ({plot_no}/{number_of_plots})"
+            par_formatter(temp_paragraphs)
+            document.add_picture(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png", width=Cm(16))
+
+
+
+
+    # Unpack the variables that were passed to the function in a dictionary called var_dict
     sys_username = var_dict['username']
     url_choice = var_dict['url_choice']
     entity_choice = var_dict['entity_choice']
@@ -133,6 +194,9 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     no_intersects = var_dict['no_intersects']
     perc_no_intersects = (no_intersects / total_datapoints * 100)
     chosen_feature_qty = var_dict['chosen_feature_qty']
+    column_name_list = var_dict['column_name_list']
+    list_of_years = var_dict['list_of_years']
+    list_of_features = var_dict['list_of_features']
 
     SpatialFeatureChoice_Text = SpatialFeatureChoice.replace("_","")
     if SpatialFeatureChoice_Text[-1].lower() == 's':
@@ -237,7 +301,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     paragraphs2['9 n'] = f" (similar to this report):"
     teller = 10
     for feature in Layer_List:
-        paragraphs2[f"{teller} xx"] = feature
+        paragraphs2[f"{teller} xx"] = feature.replace("_","")
         teller += 1
 
     paragraphs3 = {}
@@ -271,7 +335,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
                          f"The following spatial features are available for queries using this API profile:"
     teller = 6
     for feature in Layer_List:
-        paragraphs4[f"{teller} xx"] = f"{feature}"
+        paragraphs4[f"{teller} xx"] = feature.replace("_","")
         teller += 1
     paragraphs4[f"{teller} al"] = f"\nThe probable reasons for the {no_intersects} non intersecting projects reported" \
                                   f" are that:"
@@ -310,8 +374,12 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
 
     headings2 = {}
     headings2['1'] = f"{SpatialFeatureChoice_Text} Analysis"
+    headings2['2'] = f"Total Number of Projects and Total Capital Demand per {SpatialFeatureChoice_Text_Single} - All Years"
     paragraphs5a = {}
-    paragraphs5a['1 cp'] = f"Table {tbl_nr}.1: {SpatialFeatureChoice_Text} Analysis - Number of Projects"
+    paragraphs5a['1 n'] = f"Table {tbl_nr}.1 below provides a concise summary of key statistical insights" \
+                          f" regarding the number of projects that are requesting funding in each of the " \
+                          f"{SpatialFeatureChoice_Text}."
+    paragraphs5a['2 cp'] = f"Table {tbl_nr}.1: {SpatialFeatureChoice_Text} Analysis - Number of Projects"
 
     head_formatter(headings2)
     par_formatter(paragraphs5a)
@@ -350,7 +418,9 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         cells[3].text = f"Percentage of total in {top_five_projfeat_text} together:\n{sum_top_five_projects_perc_of_total}"
 
     paragraphs5b = {}
-    paragraphs5b['1 cp'] = f"Table {tbl_nr}.2: {SpatialFeatureChoice_Text} Analysis - Capital Demand (R)"
+    paragraphs5b['1 n'] = f"\nTable {tbl_nr}.2 below provides a concise summary of key statistical insights regarding" \
+                          f" the total capital demand per {SpatialFeatureChoice_Text_Single}."
+    paragraphs5b['2 cp'] = f"Table {tbl_nr}.2: {SpatialFeatureChoice_Text} Analysis - Capital Demand (R)"
     par_formatter(paragraphs5b)
 
     table = document.add_table(rows=1, cols=4, style='List Table 4')
@@ -391,9 +461,17 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
     paragraphs5c = {}
 
     if chosen_feature_qty > 10:
-        paragraphs5c['1 cp'] = f"Figure {fig_nr}.1: The single {SpatialFeatureChoice_Text_Single} with the highest value (Nr of Projects" \
-                           f" & Capital Demand) vs the rest"
+        paragraphs5c['1 n'] = f"\nThe number of projects per {SpatialFeatureChoice_Text_Single} and the capital demand " \
+                              f"per {SpatialFeatureChoice_Text_Single} needs to be looked at together for better " \
+                              f"insight. Figures {fig_nr}.1 and {fig_nr}.2 assist with further graphical insight into" \
+                              f" some of the numbers that are provided in Tables {tbl_nr-1}.1 and {tbl_nr-1}.2."
+        paragraphs5c['1 cp'] = f"Figure {fig_nr}.1: The single {SpatialFeatureChoice_Text_Single} with the highest " \
+                               f"value (Nr of Projects & Capital Demand) vs the rest"
     else:
+        paragraphs5c['1 n'] = f"The number of projects per {SpatialFeatureChoice_Text_Single} and the capital demand " \
+                              f"per {SpatialFeatureChoice_Text_Single} needs to be looked at together for better " \
+                              f"insight. Figure {fig_nr} assists with further graphical insight into" \
+                              f" some of the numbers that are provided in Tables {tbl_nr-1}.1 and {tbl_nr-1}.2."
         paragraphs5c['1 cp'] = f"Figure {fig_nr}: The single {SpatialFeatureChoice_Text_Single} with the highest value (Nr of Projects" \
                            f" & Capital Demand) vs the rest"
     par_formatter(paragraphs5c)
@@ -421,11 +499,11 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
         fig_nr += 1
 
     paragraphs6 = {}
-    paragraphs6['1 n'] = f"The highest number of projects in a single {SpatialFeatureChoice_Text} is in "
+    paragraphs6['1 n'] = f"The highest number of projects in a single {SpatialFeatureChoice_Text_Single} is in "
     paragraphs6['2 b'] = f"{maximum_projects_feature}. "
     paragraphs6['3 i'] = f"That is {maximum_projects} projects and this is {max_projects_perc_of_total} of the total " \
                          f"number of projects."
-    paragraphs6['4 n'] = f"The highest capital demand in a single {SpatialFeatureChoice_Text} is in "
+    paragraphs6['4 n'] = f"The highest capital demand in a single {SpatialFeatureChoice_Text_Single} is in "
     paragraphs6['5 b'] = f"{maximum_cost_feature}. "
     paragraphs6['6 i'] = f"That is {maximum_cost} and this amounts to {max_cost_perc_of_total} of the total " \
                          f"capital demand."
@@ -476,10 +554,61 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_s
 
         par_formatter(paragraphs7)
 
+    paragraphs8 = {}
+    paragraphs8['1 n'] = f"The following figures provide a bar graph representation of the number of projects per " \
+                         f"{SpatialFeatureChoice_Text_Single} with the colour of the bars representing the level " \
+                         f"of capital demand in each of these {SpatialFeatureChoice_Text}."
+    par_formatter(paragraphs8)
+
+
+    # Split and sort the main data frame
+    df_subs = return_frames(df_Master=df_EntireSet, feature_qty=chosen_feature_qty, block_limit=40,
+                            sort_column=f'Projects per {SpatialFeatureChoice}')
+    number_of_plots = len(df_subs)
+
+    # Make the bar plots with number of projects and capital demand per project
     build_bar_plots_1(number_of_plots=number_of_plots, fig_nr=fig_nr)
 
     fig_nr += 1
 
+    paragraphs9 = {}
+    paragraphs9['1 n'] = f"The following figures provide a histogram representation of the capital demand per " \
+                         f"{SpatialFeatureChoice_Text_Single}. A colour breakdown is provided of each year's sub-" \
+                         f"total that contribute towards the overall total capital demand of each " \
+                         f"{SpatialFeatureChoice_Text_Single}."
+    par_formatter(paragraphs9)
+
+    # Split and sort the main data frame
+    df_subs = return_frames(df_Master=df_EntireSet, feature_qty=chosen_feature_qty, block_limit=40,
+                            sort_column='Capital All Years')
+    number_of_plots = len(df_subs)
+
+    # Make a histograme of the total capital demand per spatial feature stacked up with all years
+    build_bar_plots_2(number_of_plots=number_of_plots, fig_nr=fig_nr)
+
+    fig_nr += 1
+
+
+    headings2b = {}
+    headings2b['2'] = f"Total Capital Demand per {SpatialFeatureChoice_Text_Single} - MTREF only"
+    head_formatter(headings2b)
+
+    paragraphs10 = {}
+    paragraphs10['1 n'] = f"The following figures provide a histogram representation of the capital demand per " \
+                         f"{SpatialFeatureChoice_Text_Single}. A colour breakdown is provided of each year's sub-" \
+                         f"total that contribute towards the overall MTREF total capital demand of each " \
+                         f"{SpatialFeatureChoice_Text_Single}."
+    par_formatter(paragraphs10)
+
+    # Split and sort the main data frame
+    df_subs = return_frames(df_Master=df_EntireSet, feature_qty=chosen_feature_qty, block_limit=40,
+                            sort_column='Capital MTREF')
+    number_of_plots = len(df_subs)
+
+    # Make a histograme of the total capital demand per spatial feature stacked up with all years
+    build_bar_plots_3(number_of_plots=number_of_plots, fig_nr=fig_nr)
+
+    fig_nr += 1
 
     full_path = f"./DOWNLOAD_FOLDER/{word_file_name}"
     document.save(full_path)

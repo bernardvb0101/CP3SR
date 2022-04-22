@@ -12,6 +12,8 @@ def return_frames(df_Master, feature_qty, block_limit, sort_column):
     df_Master.sort_values(sort_column, inplace=True, ascending=True)
     # Calculate the number of subframes
     number_of_sub_dfs = round(feature_qty/block_limit)
+    if number_of_sub_dfs == 0:
+        number_of_sub_dfs = 1
     # Create that number of data_sets
     dfs = np.array_split(df_Master, number_of_sub_dfs)
     return dfs

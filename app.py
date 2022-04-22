@@ -5,7 +5,6 @@ from Utilities.url_exists import URL_exists
 from Utilities.control_growth import control_growth_of_docx
 from Utilities.get_url_vars import vars_from_json_file
 from Utilities.get_API_vars import API_vars_json_file
-from Utilities.create_sub_dfs import return_frames
 from CP3_API_calls.Create_API_Variables import create_vars
 from CP3_API_calls.BaselineCatalogue import baseline_catalogue
 from CP3_API_calls.ProjectCatalogue import ProjectCatalogue
@@ -255,6 +254,7 @@ def home():
                     list_nr = []  # List with number of projects in a ward
                     list_cost = {}  # list_cost[2022], etc
                     list_cost['Total'] = []
+                    list_cost['MTREF'] = []
                     for year in list_of_years:
                         list_cost[year] = []
                     mask3_dict = {}
@@ -272,6 +272,8 @@ def home():
                         df_perward[feature] = df_FeatureIntersectPer[df_FeatureIntersectPer[feature] > 0][feature]
                         # Set the variables that will keep track of the budget per spatial feature to zero
                         project_total = 0
+                        mtref_total = 0
+
                         for year in list_of_years:
                             project_year_total[year] = 0
 
@@ -298,25 +300,33 @@ def home():
                                 try:
                                     project_year_total[year] += float(df_mask3_dict[year]['CapExDemand'].iloc[0])
                                     project_total += float(df_mask3_dict[year]['CapExDemand'].iloc[0])
+                                    if year in list_of_years[0:3]:
+                                        mtref_total += float(df_mask3_dict[year]['CapExDemand'].iloc[0])
                                 except IndexError:  # If there is no year, an index error is returned. The populate the list with a zero.
                                     project_year_total[year] += 0
                                     project_total += 0
+                                    if year in list_of_years[0:3]:
+                                        mtref_total += 0
 
                         list_cost['Total'].append(project_total)
+                        list_cost['MTREF'].append(mtref_total)
                         for year in list_of_years:
                             list_cost[year].append(project_year_total[year])
 
                     # With these lists a new dataframe can be created to plot
-                    # Thus, create a dataframe/dataframes containing all the spatial feautures selected, each containing the
-                    # number of projects in that feature and the capital demand per that feature
+                    # Thus, create a dataframe/dataframes containing all the spatial feautures selected, each containing
+                    # the number of projects in that feature and the capital demand per that feature
                     # Decide on the number of data sets depending on the size of the data
 
                     # 1st Create Dataset of all the data to split up for graphing purposes
                     df_EntireSet = pd.DataFrame(
                         {SpatialFeatureChoice: list_of_features, f'Projects per {SpatialFeatureChoice}': list_nr,
-                         f'Capital All Years': list_cost['Total']})
+                         'Capital All Years': list_cost['Total'], 'Capital MTREF': list_cost['MTREF']})
+                    column_name_list = []
                     for year in list_of_years:
+                        column_name_list.append(f'Capital {year}')
                         df_EntireSet[f'Capital {year}'] = list_cost[year]
+
 
                     # Now sort the dataset in order of number of projects from largest to smallest
                     df_EntireSet.sort_values(f'Projects per {SpatialFeatureChoice}', inplace=True, ascending=True)
@@ -327,10 +337,6 @@ def home():
                     1	Ward 66	                8	                                1.557022e+0
                     ...
                     """
-                    # Split the data frames
-                    df_subs = return_frames(df_Master=df_EntireSet, feature_qty=chosen_feature_qty, block_limit=40,
-                                            sort_column=f'Projects per {SpatialFeatureChoice}')
-                    number_of_plots = len(df_subs)
 
                     # Wrap all the loose variables in a dictionary for use in the report
                     var_dict = {}
@@ -343,6 +349,9 @@ def home():
                     var_dict['intersecting'] = intersecting
                     var_dict['no_intersects'] = no_intersects
                     var_dict['chosen_feature_qty'] = chosen_feature_qty
+                    var_dict['column_name_list'] = column_name_list
+                    var_dict['list_of_years'] = list_of_years
+                    var_dict['list_of_features'] = list_of_features
 
                     nav_stage = 2  # To allow the user to once more select a field
                     # Check the growth of files and reduce it
@@ -350,7 +359,6 @@ def home():
                     # Now create the spatial feature report
                     path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict,
                                           df_project_cat=df_ProjectCatalogue, df_intersects2=df_Intersects2,
-                                          df_subs=df_subs, number_of_plots=number_of_plots,
                                           df_EntireSet=df_EntireSet)
                     return send_file(path, as_attachment=True)
                 else:
