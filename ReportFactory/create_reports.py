@@ -470,12 +470,12 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
         paragraphs5c['1 cp'] = f"Figure {fig_nr}.1: The single {SpatialFeatureChoice_Text_Single} with the highest " \
                                f"value (Nr of Projects & Capital Demand) vs the rest"
     else:
-        paragraphs5c['1 n'] = f"The number of projects per {SpatialFeatureChoice_Text_Single} and the capital demand " \
+        paragraphs5c['1 n'] = f"\nThe number of projects per {SpatialFeatureChoice_Text_Single} and the capital demand " \
                               f"per {SpatialFeatureChoice_Text_Single} needs to be looked at together for better " \
                               f"insight. Figure {fig_nr} assists with further graphical insight into" \
                               f" some of the numbers that are provided in Tables {tbl_nr-1}.1 and {tbl_nr-1}.2."
-        paragraphs5c['1 cp'] = f"Figure {fig_nr}: The single {SpatialFeatureChoice_Text_Single} with the highest value (Nr of Projects" \
-                           f" & Capital Demand) vs the rest"
+        paragraphs5c['1 cp'] = f"Figure {fig_nr}: The single {SpatialFeatureChoice_Text_Single} with the highest " \
+                               f"value (Nr of Projects & Capital Demand) vs the rest"
     par_formatter(paragraphs5c)
 
     colors = ['red', 'green']
