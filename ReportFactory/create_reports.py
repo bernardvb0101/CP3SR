@@ -7,7 +7,7 @@ from datetime import datetime
 from Utilities.create_sub_dfs import return_frames
 
 
-def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_EntireSet):
+def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_intersects2, df_EntireSet):
     """
     This module creates a spatial report in a MSWord File
     """
@@ -578,6 +578,21 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
     headings3 = {}
     headings3['1'] = f"Total Capital Demand per {SpatialFeatureChoice_Text_Single} - All Years"
     head_formatter(headings3)
+
+    paragraphs8b = {}
+    paragraphs8b['1 n'] = f"There are different funding sources from which capital is requested. For the " \
+                          f"financial baseline that was selected for this report query ({baseline_dict['Name']})," \
+                          f" the breakdown of capital demand for {entity_choice} per funding source is shown in " \
+                          f"Figure {fig_nr} below."
+    paragraphs8b['2 cp'] = f"Figure {fig_nr}: Capital Demand Per Funding Source"
+    par_formatter(paragraphs8b)
+
+    fig[fig_nr] = px.pie(df_CapexBudgetDemandCatalogue2, values='CapExDemand', names="FundingSourceName",
+                         title='Capital Demand per funding Source')
+    fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
+    document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(15))
+
+    fig_nr += 1
 
     list_of_years_str = []
     for year in list_of_years:

@@ -358,7 +358,7 @@ def home():
                     control_growth_of_docx()
                     # Now create the spatial feature report
                     path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict,
-                                          df_project_cat=df_ProjectCatalogue, df_intersects2=df_Intersects2,
+                                          df_CapexBudgetDemandCatalogue2=df_CapexBudgetDemandCatalogue2, df_intersects2=df_Intersects2,
                                           df_EntireSet=df_EntireSet)
                     return send_file(path, as_attachment=True)
                 else:
