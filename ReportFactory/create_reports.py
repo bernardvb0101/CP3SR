@@ -117,7 +117,7 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
             temp_paragraphs = {}
             temp_paragraphs[
                 f'{plot_no} cp'] = f"Figure {temp_fig[plot_no]}: Projects and Capital Demand per " \
-                                   f"{SpatialFeatureChoice_Text} ({plot_no}/{number_of_plots})"
+                                   f"{SpatialFeatureChoice_Text_Single} ({plot_no}/{number_of_plots})"
             par_formatter(temp_paragraphs)
             document.add_picture(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png", width=Cm(16))
 
@@ -140,13 +140,14 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
             fig_t[plot_no][temp_fig[plot_no]].update_yaxes(categoryorder='total descending')
             fig_t[plot_no][temp_fig[plot_no]].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
             fig_t[plot_no][temp_fig[plot_no]].update_layout(barmode='stack')
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(legend_title="Capital Demand MTREF")
             # Write images to png
             fig_t[plot_no][temp_fig[plot_no]].write_image(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png")
             # Add a page break
             document.add_page_break()
             temp_paragraphs = {}
             temp_paragraphs[
-                f'{plot_no} cp'] = f"Figure {temp_fig[plot_no]}: Capital Demand per {SpatialFeatureChoice_Text} - " \
+                f'{plot_no} cp'] = f"Figure {temp_fig[plot_no]}: Capital Demand per {SpatialFeatureChoice_Text_Single} - " \
                                    f"All Years ({plot_no}/{number_of_plots})"
             par_formatter(temp_paragraphs)
             document.add_picture(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png", width=Cm(16))
@@ -171,13 +172,14 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
             fig_t[plot_no][temp_fig[plot_no]].update_yaxes(categoryorder='total descending')
             fig_t[plot_no][temp_fig[plot_no]].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
             fig_t[plot_no][temp_fig[plot_no]].update_layout(barmode='stack')
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(legend_title="Capital Demand All Years")
             # Write images to png
             fig_t[plot_no][temp_fig[plot_no]].write_image(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png")
             # Add a page break
             document.add_page_break()
             temp_paragraphs = {}
             temp_paragraphs[
-                f'{plot_no} cp'] = f"Figure {temp_fig[plot_no]}: Capital Demand per {SpatialFeatureChoice_Text} - " \
+                f'{plot_no} cp'] = f"Figure {temp_fig[plot_no]}: Capital Demand per {SpatialFeatureChoice_Text_Single} - " \
                                    f"MTREF Period ({plot_no}/{number_of_plots})"
             par_formatter(temp_paragraphs)
             document.add_picture(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png", width=Cm(16))
@@ -275,8 +277,8 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
     paragraphs0['2 i'] = f"{timenow} "
     paragraphs0['3 n'] = "from the "
     paragraphs0['4 b'] = f"{entity_choice} "
-    paragraphs0['5 n'] = "CP3 system by the following user: "
-    paragraphs0['6 i'] = f"'{sys_username}'. "
+    paragraphs0['5 n'] = "CP3 system."
+    # paragraphs0['6 i'] = f"'{sys_username}'. "
 
     paragraphs1 = {}
     paragraphs1['1 n'] = "The baseline "
@@ -375,8 +377,8 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
     # document.add_page_break()
 
     headings2 = {}
-    headings2['1'] = f"{SpatialFeatureChoice_Text} Analysis"
-    headings2['2'] = f"Total Number of Projects and Total Capital Demand per {SpatialFeatureChoice_Text_Single} - All Years"
+    #headings2['1'] = f"{SpatialFeatureChoice_Text} Analysis"
+    headings2['1'] = f"Total Number of Projects and Total Capital Demand per {SpatialFeatureChoice_Text_Single} - All Years"
     paragraphs5a = {}
     paragraphs5a['1 n'] = f"Table {tbl_nr}.1 below provides a concise summary of key statistical insights" \
                           f" regarding the number of projects that are requesting funding in each of the " \
@@ -573,11 +575,25 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
 
     fig_nr += 1
 
+    headings3 = {}
+    headings3['1'] = f"Total Capital Demand per {SpatialFeatureChoice_Text_Single} - All Years"
+    head_formatter(headings3)
+
+    list_of_years_str = []
+    for year in list_of_years:
+        list_of_years_str.append(str(year))
+    mtref_years_text = " and".join(", ".join(list_of_years_str[0:3]).rsplit(',', 1))
+
     paragraphs9 = {}
     paragraphs9['1 n'] = f"The following figures provide a histogram representation of the capital demand per " \
                          f"{SpatialFeatureChoice_Text_Single}. A colour breakdown is provided of each year's sub-" \
                          f"total that contribute towards the overall total capital demand of each " \
-                         f"{SpatialFeatureChoice_Text_Single}."
+                         f"{SpatialFeatureChoice_Text_Single}. Note that the capital demand beyond the first three" \
+                         f" years representing the Medium Term Expenditure Framework (MTREF - years" \
+                         f" {mtref_years_text}) are generally more sparsely and less diligently populated, therefore " \
+                         f"less reliance should be vested on these outer years when appraising the overall capital " \
+                         f"demand. The reason for this is usually because of National Treasury's requirement for " \
+                         f"annual budget submissions spanning only over the MTREF (i.e. the next three years)."
     par_formatter(paragraphs9)
 
     # Split and sort the main data frame
@@ -591,16 +607,73 @@ def create_worddoc(var_dict, baseline_dict, df_project_cat, df_intersects2, df_E
     fig_nr += 1
 
 
-    headings2b = {}
-    headings2b['2'] = f"Total Capital Demand per {SpatialFeatureChoice_Text_Single} - MTREF only"
-    head_formatter(headings2b)
+    headings4 = {}
+    headings4['1'] = f"Total Capital Demand per {SpatialFeatureChoice_Text_Single} - MTREF only"
+    head_formatter(headings4)
 
     paragraphs10 = {}
-    paragraphs10['1 n'] = f"The following figures provide a histogram representation of the capital demand per " \
-                         f"{SpatialFeatureChoice_Text_Single}. A colour breakdown is provided of each year's sub-" \
-                         f"total that contribute towards the overall MTREF total capital demand of each " \
-                         f"{SpatialFeatureChoice_Text_Single}."
+    paragraphs10['1 n'] = f"Table {tbl_nr} below provides a concise summary of key statistical insights regarding" \
+                          f" the total MTREF capital demand per {SpatialFeatureChoice_Text_Single}."
+    paragraphs10['2 cp'] = f"Table {tbl_nr}: {SpatialFeatureChoice_Text} Analysis - MTREF Capital Demand (R)"
     par_formatter(paragraphs10)
+
+    # Create variables for the table summary
+    maximum_capital_float_MTREF = df_EntireSet['Capital MTREF'].max()
+    maximum_capital_MTREF = format_budget(maximum_capital_float_MTREF)
+    maximum_capital_feature_MTREF = df_EntireSet.loc[df_EntireSet['Capital MTREF'] ==
+                                                     df_EntireSet['Capital MTREF'].max(),
+                                                     f'{SpatialFeatureChoice}'].iloc[0]
+    minimum_capital_float_MTREF = df_EntireSet['Capital MTREF'].min()
+    minimum_capital_MTREF = format_budget(minimum_capital_float_MTREF)
+    minimum_capital_feature_MTREF = df_EntireSet.loc[df_EntireSet['Capital MTREF'] ==
+                                                     df_EntireSet['Capital MTREF'].min(),
+                                                     f'{SpatialFeatureChoice}'].iloc[0]
+    average_cost_MTREF_float = df_EntireSet['Capital MTREF'].mean()
+    average_cost_MTREF = format_budget(average_cost_MTREF_float)
+    seventy_fifth_cost_float_MTREF = df_EntireSet['Capital MTREF'].quantile(q=0.75)
+    seventy_fifth_cost_MTREF = format_budget(seventy_fifth_cost_float_MTREF)
+    sum_cost_float_MTREF = df_EntireSet['Capital MTREF'].sum()
+    sum_cost_MTREF = format_budget(sum_cost_float_MTREF)
+    max_cost_perc_of_total_float_MTREF = df_EntireSet['Capital MTREF'].max() / df_EntireSet['Capital MTREF'].sum()
+    min_cost_perc_of_total_float_MTREF = df_EntireSet['Capital MTREF'].min() / df_EntireSet['Capital MTREF'].sum()
+    max_cost_perc_of_total_MTREF = format_percent(max_cost_perc_of_total_float_MTREF)
+    min_cost_perc_of_total_MTREF = format_percent(min_cost_perc_of_total_float_MTREF)
+
+    # Now insert the table
+    table = document.add_table(rows=1, cols=4, style='List Table 4')
+    heading_cells = table.rows[0].cells
+    heading_cells[0].text = 'Description'
+    heading_cells[1].text = 'Info (1)'
+    heading_cells[2].text = 'Info (2)'
+    heading_cells[3].text = 'Info (3)'
+
+    cells = table.add_row().cells
+    cells[0].text = f"MTREF Capital demand in all {SpatialFeatureChoice_Text} - Overview"
+    cells[1].text = f"MTREF capital demand in all {SpatialFeatureChoice_Text}:\n{sum_cost_MTREF}"
+    cells[2].text = f"The average MTREF capital demand per {SpatialFeatureChoice_Text_Single}:\n{average_cost_MTREF}"
+    cells[3].text = f"The 75th percentile of MTREF capital demand for {SpatialFeatureChoice_Text}:" \
+                    f"\n{seventy_fifth_cost_MTREF}"
+
+    cells = table.add_row().cells
+    cells[0].text = f"The highest MTREF capital demand"
+    cells[1].text = f"In {SpatialFeatureChoice_Text_Single}:\n{maximum_capital_feature_MTREF}"
+    cells[2].text = f"MTREF capital Demand in {maximum_capital_feature_MTREF}:\n{maximum_capital_MTREF}"
+    cells[3].text = f"Percentage of total MRTEF capital demand in {maximum_capital_feature_MTREF}:\n{max_cost_perc_of_total_MTREF}"
+
+    cells = table.add_row().cells
+    cells[0].text = f"The lowest MTREF capital demand "
+    cells[1].text = f"In {SpatialFeatureChoice_Text_Single}:\n{minimum_capital_feature_MTREF}"
+    cells[2].text = f"MTREF capital Demand in {minimum_capital_feature_MTREF}:\n{minimum_capital_MTREF}"
+    cells[3].text = f"Percentage of total MTREF capital demand in {minimum_capital_feature_MTREF}:\n{min_cost_perc_of_total_MTREF}"
+
+    tbl_nr += 1
+
+    paragraphs11 = {}
+    paragraphs11['1 n'] = f"\nThe following figures provide a histogram representation of the capital demand per " \
+                          f"{SpatialFeatureChoice_Text_Single}. A colour breakdown is provided of each year's sub-" \
+                          f"total that contribute towards the overall MTREF total capital demand of each " \
+                          f"{SpatialFeatureChoice_Text_Single}."
+    par_formatter(paragraphs11)
 
     # Split and sort the main data frame
     df_subs = return_frames(df_Master=df_EntireSet, feature_qty=chosen_feature_qty, block_limit=40,
