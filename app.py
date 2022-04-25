@@ -359,7 +359,7 @@ def home():
                     # Now create the spatial feature report
                     path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict,
                                           df_CapexBudgetDemandCatalogue2=df_CapexBudgetDemandCatalogue2, df_intersects2=df_Intersects2,
-                                          df_EntireSet=df_EntireSet)
+                                          df_EntireSet=df_EntireSet, df_perward=df_perward)
                     return send_file(path, as_attachment=True)
                 else:
                     nav_stage = 2
