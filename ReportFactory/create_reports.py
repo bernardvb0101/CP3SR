@@ -103,13 +103,16 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
         temp_fig = {}
 
         for plot_no in range(1, number_of_plots + 1):
-            temp_fig[plot_no] = f"{fig_nr}.{plot_no}"
+            if number_of_plots > 1:
+                temp_fig[plot_no] = f"{fig_nr}.{plot_no}"
+            else:
+                temp_fig[plot_no] = f"{fig_nr}"
             fig_t[plot_no] = {}
             fig_t[plot_no][temp_fig[plot_no]] = px.bar(df_subs[plot_no - 1], x=f'Projects per {SpatialFeatureChoice}',
                                             y=SpatialFeatureChoice,
                                             color='Capital All Years',
                                             height=1500, width=1100, orientation='h',
-                                                       color_continuous_scale=px.colors.sequential.Bluered)
+                                                       color_continuous_scale=px.colors.sequential.Rainbow)
             # color_continuous_scale=px.colors.sequential.Burg
             # Sort images to follow each other
             fig_t[plot_no][temp_fig[plot_no]].update_yaxes(categoryorder='total descending')
@@ -140,7 +143,10 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
         temp_fig = {}
 
         for plot_no in range(1, number_of_plots + 1):
-            temp_fig[plot_no] = f"{fig_nr}.{plot_no}"
+            if number_of_plots > 1:
+                temp_fig[plot_no] = f"{fig_nr}.{plot_no}"
+            else:
+                temp_fig[plot_no] = f"{fig_nr}"
             fig_t[plot_no] = {}
             fig_t[plot_no][temp_fig[plot_no]] = px.histogram(df_subs[plot_no - 1], y=SpatialFeatureChoice,
                                                              x=column_name_list,
@@ -178,7 +184,10 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
         temp_fig = {}
 
         for plot_no in range(1, number_of_plots + 1):
-            temp_fig[plot_no] = f"{fig_nr}.{plot_no}"
+            if number_of_plots > 1:
+                temp_fig[plot_no] = f"{fig_nr}.{plot_no}"
+            else:
+                temp_fig[plot_no] = f"{fig_nr}"
             fig_t[plot_no] = {}
             fig_t[plot_no][temp_fig[plot_no]] = px.histogram(df_subs[plot_no - 1], y=SpatialFeatureChoice,
                                                              x=column_name_list[0:3],
@@ -707,6 +716,8 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
     build_bar_plots_3(number_of_plots=number_of_plots, fig_nr=fig_nr)
 
 
+    # fig_nr = 1
+    tbl_nr = 1
     heading_no += 1
     headings5 = {}
     headings5['1'] = f"Summary per {SpatialFeatureChoice_Text_Single}"
@@ -733,14 +744,19 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 from_head_str = from_head_str[:-1]
             # Heading Level2
             headings5b['2'] = f"{from_head_str} {feature}"
+            head_formatter(headings5b)
+            # Table Number
+            paragraphs12 = {}
+            paragraphs12['1 cp'] = f"Table {heading_no}.{tbl_nr}: Summary - {from_head_str} {feature}"
+            par_formatter(paragraphs12)
         else:
             # Heading Level2
             headings5b['2'] = f"{feature}"
-        head_formatter(headings5b)
-        # Table Number
-        paragraphs12 = {}
-        paragraphs12['1 cp'] = f"Table {heading_no}.{tbl_nr}: {feature} Summary"
-        par_formatter(paragraphs12)
+            paragraphs12 = {}
+            paragraphs12['1 cp'] = f"Table {heading_no}.{tbl_nr}: Summary - {feature}"
+            par_formatter(paragraphs12)
+
+
         # Table
         # Now insert the table
         table = document.add_table(rows=1, cols=2, style='List Table 4')
