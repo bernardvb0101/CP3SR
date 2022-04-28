@@ -47,7 +47,7 @@ else:
     entity_choice = []
 
 spatial_var = []
-sys_username = "Bernard"
+# sys_username = "Bernard"
 # This part of the credentials for the API call (to my understanding) is default allways "password"
 
 
@@ -64,7 +64,7 @@ def home():
     global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var, entityname_list
     global layer_list, number_of_plots, nav_stage, entity_choice
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
-    global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2, sys_username
+    global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2
 
     if json_file_ok:
         if request.method == 'POST':  # Step 1: Pressed the submit button with username and pw, no dropdown yet
@@ -169,7 +169,6 @@ def home():
 
             elif button_2ndAPI is not None and (nav_stage == 2 or nav_stage ==3): # Calling the 2nd set of APIs
                 SpatialFeatureChoice = request.form['inputGroupSelect01']
-                print(f"Moes hier wees en SpatialFeatureChoice={SpatialFeatureChoice}")
                 if SpatialFeatureChoice != "Choose...":  # User selected a spatial feature
                     # Call the MapServiceIntersectionCatalogue - it can only be called now that the preferred spatial
                     # feature is selected by the user (SpatialFeatureChoice).
@@ -340,7 +339,7 @@ def home():
 
                     # Wrap all the loose variables in a dictionary for use in the report
                     var_dict = {}
-                    var_dict['username'] = sys_username
+                    # var_dict['username'] = sys_username
                     var_dict['url_choice'] = url_choice
                     var_dict['entity_choice'] = entity_choice
                     var_dict['SpatialFeatureChoice'] = SpatialFeatureChoice
