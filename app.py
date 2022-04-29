@@ -336,6 +336,11 @@ def home():
 
                     # Now sort the dataset in order of number of projects from largest to smallest
                     df_EntireSet.sort_values(f'Projects per {SpatialFeatureChoice}', inplace=True, ascending=True)
+                    # Modify df_EntireSet by adding columns to rank
+                    df_EntireSet["CapAllRank"] = df_EntireSet['Capital All Years'].rank(ascending=False)
+                    df_EntireSet["CapMTREFRank"] = df_EntireSet['Capital MTREF'].rank(ascending=False)
+                    df_EntireSet["NoProjectsRank"] = df_EntireSet[f'Projects per {SpatialFeatureChoice}'].rank(
+                        ascending=False)
                     """
                     df_EntireSet looks like this: (df_subsets also!)
                         City of Tshwane Wards	Projects per City of Tshwane Wards	Capital Demand per City of Tshwane Wards
@@ -367,7 +372,8 @@ def home():
                                           df_CapexBudgetDemandCatalogue2=df_CapexBudgetDemandCatalogue2,
                                           df_intersects2=df_Intersects2,
                                           df_EntireSet=df_EntireSet, df_perward=df_perward,
-                                          df_CapexBudgetDemandCatalogue3=df_CapexBudgetDemandCatalogue3)
+                                          df_CapexBudgetDemandCatalogue3=df_CapexBudgetDemandCatalogue3,
+                                          df_MapServiceIntersections=df_MapServiceIntersections)
                     return send_file(path, as_attachment=True)
                 else:
                     nav_stage = 2

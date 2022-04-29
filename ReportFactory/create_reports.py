@@ -10,14 +10,14 @@ from Utilities.create_sub_dfs import return_frames
 
 
 def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_intersects2, df_EntireSet, df_perward,
-                   df_CapexBudgetDemandCatalogue3):
+                   df_CapexBudgetDemandCatalogue3, df_MapServiceIntersections):
     """
     This module creates a spatial report in a MSWord File
     """
     # *********************************************************************************************************
     #                                INITIALISATION OF KEY VARIABLES HAPPENS HERE                             #
     # *********************************************************************************************************
-    global teller, fig_nr, fig, tbl_nr, tbl, heading_no
+    global teller, fig_nr, fig, tbl_nr, tbl, heading_no, correct_wording
     fig = {}
     tbl ={}
     heading_no = 1
@@ -820,13 +820,15 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                     from_head_str = re.findall(r'[A-Za-z-]+|\d+', SpatialFeatureChoice_Text_Single)[0]
                     if from_head_str[-1].lower() == 's':
                         from_head_str = from_head_str[:-1]
-                    # Heading Level2
-                    headings5b = {"2": f"{from_head_str} {feature}"}
-                    paragraphs12 = {"1 cp": f"Table {heading_no}.{tbl_nr}: Summary - {from_head_str} {feature}"}
+                    correct_wording = f"{from_head_str} {feature}"
                 else:
-                    # Heading Level2
-                    headings5b = {"2": f"{feature}"}
-                    paragraphs12 = {"1 cp": f"Table {heading_no}.{tbl_nr}: Summary - {feature}"}
+                    correct_wording = f"{feature}"
+                # Heading Level2
+                headings5b = {"2": f"{correct_wording}"}
+                paragraphs12 = {"1 cp": f"Figure {heading_no}.{fig_nr}: {correct_wording} Funding Requests"}
+                paragraphs13 = {
+                    "1 cp": f"Figure {heading_no}.{fig_nr + 1}: {correct_wording} Departmental Requests"}
+                paragraphs14 = {"1 cp": f"Table {heading_no}.{tbl_nr}: Summary - {correct_wording}"}
                 # ****************************************************************************************************
                 #  5.x Sub-Heading (For Each) Individual Spatial Feature                                             #
                 # ****************************************************************************************************
@@ -834,17 +836,99 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 # ****************************************************************************************************
                 #  End 5.x Sub-Heading (For Each) Individual Spatial Feature                                         #
                 # ****************************************************************************************************
+                par_formatter(paragraphs12)
+                # ****************************************************************************************************
+                #                         Figure 5.x1 Funding Source Spatial Feature (For Each)                      #
+                # ****************************************************************************************************
+                df_Cap2 = {}
+                df_Cap2[feature] = df_CapexBudgetDemandCatalogue2[
+                    df_CapexBudgetDemandCatalogue2['FeatureClassName'] == feature]
+                fig[fig_nr] = px.pie(df_Cap2[feature], values='CapExDemand', names="FundingSourceName")
+                fig[fig_nr].update_traces(marker=dict(colors=colors))
+                fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
+                fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
+                fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
+                document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
+                fig_nr += 1
+                # ****************************************************************************************************
+                #                         End Figure 5.x1 Funding Source Spatial Feature (For Each)                  #
+                # ****************************************************************************************************
+                par_formatter(paragraphs13)
+                # ****************************************************************************************************
+                #                         Figure 5.x2 Departmental Funding Requests (For Each)                       #
+                # ****************************************************************************************************
+                df_Cap3 = {}
+                df_Cap3[feature] = df_CapexBudgetDemandCatalogue3[
+                    df_CapexBudgetDemandCatalogue3['FeatureClassName'] == feature]
+                fig[fig_nr] = px.pie(df_Cap3[feature], values='CapExDemand', names="DepartmentName")
+                fig[fig_nr].update_traces(marker=dict(colors=colors))
+                fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
+                fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
+                fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
+                document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
+                fig_nr += 1
+                # ****************************************************************************************************
+                #                         End Figure 5.x2 Departmental Funding Requests (For Each)                   #
+                # ****************************************************************************************************
                 # ****************************************************************************************************
                 #                         Table 5.x Summary Spatial Feature (For Each)                               #
                 # ****************************************************************************************************
-                par_formatter(paragraphs12)
+                par_formatter(paragraphs14)
                 table = document.add_table(rows=1, cols=2, style='List Table 4')
                 heading_cells = table.rows[0].cells
                 heading_cells[0].text = 'Item'
                 heading_cells[1].text = 'Description'
+                # 1. Total Capital Demand per Spatial Feature All Years
+                tot_cap_dem_per_sf = format_budget(
+                    df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['Capital All Years'].iloc[0])
+                # 1b. Rank of Total Capital Demand per Spatial Feature All Years (1 is highest)
+                tot_cap_dem_per_sf_rank = int(
+                    df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['CapAllRank'].iloc[0])
                 cells = table.add_row().cells
-                cells[0].text = f"Number of Projects"
-                cells[1].text = f""
+                cells[0].text = f"Total Capital Demand for {correct_wording} - All Years"
+                cells[1].text = f"{tot_cap_dem_per_sf}\nRank: {tot_cap_dem_per_sf_rank} (1 = Highest)"
+
+                # 2. MTREF Capital Demand per Spatial Feature MTREF
+                mtref_cap_dem_per_sf = format_budget(
+                    df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['Capital All Years'].iloc[0])
+                # 2b. Rank of Total Capital Demand per Spatial Feature All Years (1 is highest)
+                mtref_cap_dem_per_sf_rank = int(
+                    df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['CapMTREFRank'].iloc[0])
+                cells = table.add_row().cells
+                cells[0].text = f"Total Capital Demand for {correct_wording} - MTREF"
+                cells[1].text = f"{mtref_cap_dem_per_sf}\nRank: {mtref_cap_dem_per_sf_rank} (1 = Highest)"
+
+                # 3. Years with capital per sf
+                df_filter1 = df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature][column_name_list]
+                cols = df_filter1.columns.values
+                mask = df_filter1.gt(0.0).values
+                out = [cols[x].tolist() for x in mask]
+                years_asking_cap = (" and".join(", ".join(out[0]).rsplit(',', 1))).replace("Capital ", "")
+                cells = table.add_row().cells
+                cells[0].text = f"Financial Years in which capital requirements are listed for {correct_wording}"
+                cells[1].text = f"{years_asking_cap}"
+
+                # 4. Year with Highest Capital Demand
+                max_year_val = df_filter1.max(axis=1).iloc[0]
+                year_highest_dem = df_filter1.columns[(df_filter1 == max_year_val).iloc[0]][0]
+                cells = table.add_row().cells
+                cells[0].text = f"Financial Year with highest capital demand for {correct_wording}"
+                cells[1].text = f"{year_highest_dem}"
+
+                # 5. Intersecting logic
+                project_intersecting_feature = df_MapServiceIntersections['LocationType'].unique()[0]
+                cells = table.add_row().cells
+                cells[0].text = f"{correct_wording} intersecting feature used"
+                cells[1].text = f"{project_intersecting_feature}"
+
+                # 6. Total no of projs intersecting per sf
+                tot_projs_in_sf = len(df_perward[feature])
+                # 6b Rank Total No of Projs
+                tot_projs_in_sf_rank = int(
+                    df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['NoProjectsRank'].iloc[0])
+                cells = table.add_row().cells
+                cells[0].text = f"Total number of projects intersecting with {correct_wording}"
+                cells[1].text = f"{tot_projs_in_sf}\nRank: {tot_projs_in_sf_rank} (1 = Highest)"
                 tbl_nr += 1
                 # ****************************************************************************************************
                 #                       End Table 5.x Summary Spatial Feature (For Each)                             #
