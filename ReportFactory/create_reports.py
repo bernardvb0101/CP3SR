@@ -9,7 +9,8 @@ from Utilities.create_sub_dfs import return_frames
 
 
 
-def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_intersects2, df_EntireSet, df_perward):
+def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_intersects2, df_EntireSet, df_perward,
+                   df_CapexBudgetDemandCatalogue3):
     """
     This module creates a spatial report in a MSWord File
     """
@@ -660,6 +661,11 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                                    f"({baseline_dict['Name']}), the breakdown of capital demand for {entity_choice}"
                                    f" per funding source is shown in Figure {heading_no}.{fig_nr} below.",
                             "2 cp": f"Figure {heading_no}.{fig_nr}: Capital Demand Per Funding Source"}
+            paragraphs8c = {"1 n": f"For the financial baseline that was selected for this report query "
+                                   f"({baseline_dict['Name']}), the breakdown of capital demand for {entity_choice}"
+                                   f" per department is shown in Figure {heading_no}.{fig_nr+1} below."
+                            }
+            paragraphs8d = {"1 cp": f"Figure {heading_no}.{fig_nr + 1}: Capital Demand Per {entity_choice} Department"}
             paragraphs9 = {
                 "1 n": f"The following figures provide a histogram representation of the capital demand per"
                        f" {SpatialFeatureChoice_Text_Single}. A colour breakdown is provided of each year's sub-total"
@@ -678,8 +684,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
             # *********************************************************************************************************
             #                                       Add Figure 3.1                                                    #
             # *********************************************************************************************************
-            fig[fig_nr] = px.pie(df_CapexBudgetDemandCatalogue2, values='CapExDemand', names="FundingSourceName",
-                                 title='Capital Demand per funding Source')
+            fig[fig_nr] = px.pie(df_CapexBudgetDemandCatalogue2, values='CapExDemand', names="FundingSourceName")
             fig[fig_nr].update_traces(marker=dict(colors=colors))
             fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
             fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
@@ -689,9 +694,25 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
             # *********************************************************************************************************
             #                                       End Figure 3.1                                                    #
             # *********************************************************************************************************
-            par_formatter(paragraphs9)
+            par_formatter(paragraphs8c)
+            document.add_page_break()
+            par_formatter(paragraphs8d)
             # *********************************************************************************************************
             #                                       Add Figure 3.2                                                    #
+            # *********************************************************************************************************
+            fig[fig_nr] = px.pie(df_CapexBudgetDemandCatalogue3, values='CapExDemand', names="DepartmentName")
+            fig[fig_nr].update_traces(marker=dict(colors=colors))
+            fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
+            fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
+            fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
+            document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
+            fig_nr += 1
+            # *********************************************************************************************************
+            #                                       End Figure 3.2                                                    #
+            # *********************************************************************************************************
+            par_formatter(paragraphs9)
+            # *********************************************************************************************************
+            #                                       Add Figure 3.3                                                    #
             # *********************************************************************************************************
             # Split and sort the main data frame
             df_subs = return_frames(df_Master=df_EntireSet, feature_qty=chosen_feature_qty, block_limit=40,
@@ -701,7 +722,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
             build_bar_plots_2(number_of_plots=number_of_plots, fig_nr=fig_nr, df_subs=df_subs)
             fig_nr += 1
             # *********************************************************************************************************
-            #                                       End Figure 3.2                                                    #
+            #                                       End Figure 3.3                                                    #
             # *********************************************************************************************************
             # *********************************************************************************************************
             #  END 3. Total Capital Demand per Spatial Feature - All Years                                            #

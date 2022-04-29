@@ -189,7 +189,7 @@ def home():
                                        url_list=url_list, spatial_var=spatial_var,
                                        SpatialFeatureChoice=SpatialFeatureChoice)
 
-            elif button_dlreport is not None and nav_stage == 3:  # Calling the 2nd set of APIs
+            elif button_dlreport is not None and nav_stage == 3:  # Calling the report
                 SpatialFeatureChoice = request.form['inputGroupSelect01']
                 # All APIs have now been called so the report building can proceed
                 # Change the FeatureClassName column to "category" type
@@ -220,6 +220,7 @@ def home():
                     list_of_years = sorted(list_of_years)
                     # This variable stores how many of the chosen feature there is
                     chosen_feature_qty = len(list_of_features)
+
                     # Initialise the master dictionary
                     feature_intersect_dict = {}
                     # Create a master dictionary with each spatial feature as a key
@@ -247,9 +248,15 @@ def home():
                                                                     df_CapexBudgetDemandCatalogue2[
                                                                         "PercentageIntersect"]
 
+                    df_CapexBudgetDemandCatalogue3 = df_CapexBudgetDemandCatalogue2.merge(df_ProjectCatalogue,
+                                                                                          on='ProjectId')
+
+
+
                     # ********************************************************************************************
                     # Build df_EntireSet with columns for each fin year
-                    # 1) Chosen Feature 2) No of Projs in Chosen Feature 3) Total Capital Demand in Chosen Feature 4) Capital Demand in Chosen Feature per Year
+                    # 1) Chosen Feature 2) No of Projs in Chosen Feature 3) Total Capital Demand in Chosen Feature
+                    # 4) Capital Demand in Chosen Feature per Year
                     list_nr = []  # List with number of projects in a ward
                     list_cost = {}  # list_cost[2022], etc
                     list_cost['Total'] = []
@@ -357,8 +364,10 @@ def home():
                     control_growth_of_docx()
                     # Now create the spatial feature report
                     path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict,
-                                          df_CapexBudgetDemandCatalogue2=df_CapexBudgetDemandCatalogue2, df_intersects2=df_Intersects2,
-                                          df_EntireSet=df_EntireSet, df_perward=df_perward)
+                                          df_CapexBudgetDemandCatalogue2=df_CapexBudgetDemandCatalogue2,
+                                          df_intersects2=df_Intersects2,
+                                          df_EntireSet=df_EntireSet, df_perward=df_perward,
+                                          df_CapexBudgetDemandCatalogue3=df_CapexBudgetDemandCatalogue3)
                     return send_file(path, as_attachment=True)
                 else:
                     nav_stage = 2
