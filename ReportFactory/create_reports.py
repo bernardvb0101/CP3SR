@@ -812,6 +812,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                     list_of_features.sort(key=lambda x: int(x[str_coord:]))
                 except ValueError:  # There are no numeric values to sort
                     list_of_features.sort()
+            new_page = 0
             # Build the heading level 2 strings as well as the table heading strings.
             for feature in list_of_features:
                 # This is to attempt to make a meaningful sub-heading if "feature" is just a number
@@ -824,6 +825,9 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 else:
                     correct_wording = f"{feature}"
                 # Heading Level2
+                if new_page > 0:
+                    document.add_page_break()
+
                 headings5b = {"2": f"{correct_wording}"}
                 paragraphs12 = {"1 cp": f"Figure {heading_no}.{fig_nr}: {correct_wording} Funding Requests"}
                 paragraphs13 = {
@@ -845,7 +849,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                     df_CapexBudgetDemandCatalogue2['FeatureClassName'] == feature]
                 fig[fig_nr] = px.pie(df_Cap2[feature], values='CapExDemand', names="FundingSourceName")
                 fig[fig_nr].update_traces(marker=dict(colors=colors))
-                fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
+                fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-1, xanchor="right", x=1))
                 fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
                 fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
                 document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
@@ -936,6 +940,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 # ****************************************************************************************************
                 #  END 5. Summary per Spatial Feature                                                                #
                 # ****************************************************************************************************
+                new_page += 1
         # *********************************************************************************************************
         #                                       END OF REPORT CONTENT                                             #
         # *********************************************************************************************************
