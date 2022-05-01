@@ -684,10 +684,19 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
             # *********************************************************************************************************
             #                                       Add Figure 3.1                                                    #
             # *********************************************************************************************************
+            """
             fig[fig_nr] = px.pie(df_CapexBudgetDemandCatalogue2, values='CapExDemand', names="FundingSourceName")
             fig[fig_nr].update_traces(marker=dict(colors=colors))
             fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
             fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
+            """
+            fig[fig_nr] = px.histogram(df_CapexBudgetDemandCatalogue2, y="FundingSourceName",
+                                  x='CapExDemand',
+                                  height=1100, width=1100,
+                                  orientation='h', color_discrete_sequence=colors)
+            fig[fig_nr].update_yaxes(categoryorder='total descending')
+            fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+            fig[fig_nr].update_layout(barmode='stack')
             fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
             document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
             fig_nr += 1
@@ -700,10 +709,19 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
             # *********************************************************************************************************
             #                                       Add Figure 3.2                                                    #
             # *********************************************************************************************************
+            """
             fig[fig_nr] = px.pie(df_CapexBudgetDemandCatalogue3, values='CapExDemand', names="DepartmentName")
             fig[fig_nr].update_traces(marker=dict(colors=colors))
             fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
             fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
+            """
+            fig[fig_nr] = px.histogram(df_CapexBudgetDemandCatalogue3, y="DepartmentName",
+                                       x='CapExDemand',
+                                       height=1100, width=1100,
+                                       orientation='h', color_discrete_sequence=colors)
+            fig[fig_nr].update_yaxes(categoryorder='total descending')
+            fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+            fig[fig_nr].update_layout(barmode='stack')
             fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
             document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
             fig_nr += 1
@@ -829,6 +847,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                     document.add_page_break()
 
                 headings5b = {"2": f"{correct_wording}"}
+
                 paragraphs12 = {"1 cp": f"Figure {heading_no}.{fig_nr}: {correct_wording} Funding Requests"}
                 paragraphs13 = {
                     "1 cp": f"Figure {heading_no}.{fig_nr + 1}: {correct_wording} Departmental Requests"}
@@ -840,6 +859,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 # ****************************************************************************************************
                 #  End 5.x Sub-Heading (For Each) Individual Spatial Feature                                         #
                 # ****************************************************************************************************
+                # This works to get rid of the line break
                 par_formatter(paragraphs12)
                 # ****************************************************************************************************
                 #                         Figure 5.x1 Funding Source Spatial Feature (For Each)                      #
@@ -847,10 +867,19 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 df_Cap2 = {}
                 df_Cap2[feature] = df_CapexBudgetDemandCatalogue2[
                     df_CapexBudgetDemandCatalogue2['FeatureClassName'] == feature]
+                """
                 fig[fig_nr] = px.pie(df_Cap2[feature], values='CapExDemand', names="FundingSourceName")
                 fig[fig_nr].update_traces(marker=dict(colors=colors))
-                fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-1, xanchor="right", x=1))
+                fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
                 fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
+                """
+                fig[fig_nr] = px.histogram(df_Cap2[feature], y="FundingSourceName",
+                                           x='CapExDemand',
+                                           height=400, width=1100,
+                                           orientation='h', color_discrete_sequence=colors)
+                fig[fig_nr].update_yaxes(categoryorder='total descending')
+                fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+                fig[fig_nr].update_layout(barmode='stack')
                 fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
                 document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
                 fig_nr += 1
@@ -864,10 +893,19 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 df_Cap3 = {}
                 df_Cap3[feature] = df_CapexBudgetDemandCatalogue3[
                     df_CapexBudgetDemandCatalogue3['FeatureClassName'] == feature]
+                """
                 fig[fig_nr] = px.pie(df_Cap3[feature], values='CapExDemand', names="DepartmentName")
                 fig[fig_nr].update_traces(marker=dict(colors=colors))
                 fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
                 fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
+                """
+                fig[fig_nr] = px.histogram(df_Cap3[feature], y="DepartmentName",
+                                           x='CapExDemand',
+                                           height=600, width=1100,
+                                           orientation='h', color_discrete_sequence=colors)
+                fig[fig_nr].update_yaxes(categoryorder='total descending')
+                fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+                fig[fig_nr].update_layout(barmode='stack')
                 fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
                 document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
                 fig_nr += 1
@@ -877,6 +915,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 # ****************************************************************************************************
                 #                         Table 5.x Summary Spatial Feature (For Each)                               #
                 # ****************************************************************************************************
+                document.add_page_break()
                 par_formatter(paragraphs14)
                 table = document.add_table(rows=1, cols=2, style='List Table 4')
                 heading_cells = table.rows[0].cells
@@ -914,7 +953,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
 
                 # 4. Year with Highest Capital Demand
                 max_year_val = df_filter1.max(axis=1).iloc[0]
-                year_highest_dem = df_filter1.columns[(df_filter1 == max_year_val).iloc[0]][0]
+                year_highest_dem = df_filter1.columns[(df_filter1 == max_year_val).iloc[0]][0].split()[1]
                 cells = table.add_row().cells
                 cells[0].text = f"Financial Year with highest capital demand for {correct_wording}"
                 cells[1].text = f"{year_highest_dem}"
