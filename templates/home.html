@@ -26,7 +26,7 @@
     <form action="{{ url_for('home') }}" method="POST">
 
       <div class="row justify-content-center">  <!--Row 2 Heading for URL list / chosen URL -->
-        <div class="col-3 p-3 border bg-light">
+        <div class="col-4 p-3 border bg-light">
           {% if nav_stage == 1 %}
             <div class="p-2 border bg-light border-danger rounded fs-4 text-center">Available URLs</div> <!-- End Avail URLs border -->
           {% elif nav_stage == 2 or nav_stage == 3 %}
@@ -36,7 +36,7 @@
       </div> <!-- End row 2 -->
 
       <div class="row justify-content-center"> <!--Row 3 URL list / chosen URL -->
-        <div class="col-3 p-3 border bg-light">
+        <div class="col-4 p-3 border bg-light">
             <div class="border bg-light border-danger rounded">
               {% if nav_stage == 1 %} <!-- Show enabled URLs for user to make a choice -->
                 {% for url in url_list %}
@@ -79,7 +79,7 @@
       </div> <!-- End row 3 -->
 
       <div class="row justify-content-center"> <!-- Row 4 Start -->
-        <div class="col-3 p-3 border bg-light"> <!-- Col 4 1 Start -->
+        <div class="col-4 p-3 border bg-light"> <!-- Col 4 1 Start -->
             <div class="border bg-light border-danger rounded d-grid gap-2 col-12 mx-auto">
               {% if nav_stage == 1 %}
                 <button id="b1" name="call_1st_APIs" value="call_1st_APIs" type="submit" class="btn btn-success m-3">1. Call CP3 variables</button> <!-- Call 1st APIs -->
