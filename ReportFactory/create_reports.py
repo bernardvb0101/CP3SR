@@ -852,6 +852,14 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 paragraphs13 = {
                     "1 cp": f"Figure {heading_no}.{fig_nr + 1}: {correct_wording} Departmental Requests"}
                 paragraphs14 = {"1 cp": f"Table {heading_no}.{tbl_nr}: Summary - {correct_wording}"}
+                paragraphs15 = {"1 cp": f"Table {heading_no}.{tbl_nr+1}: All projects asking for budget in"
+                                        f" {correct_wording}"}
+                paragraphs16 = {"1 n": f"\nPlease note that the following projects will not be shown in this table:",
+                                "2 xx": f"Projects with no recorded intersect with {SpatialFeatureChoice_Text} (in "
+                                        f"other words no {df_MapServiceIntersections['LocationType'].unique()[0]} was"
+                                        f" recorded on the system for this project)",
+                                "3 xx": f"Projects that are not asking for any budget (requested budget fields are"
+                                        f" all '0')."}
                 # ****************************************************************************************************
                 #  5.x Sub-Heading (For Each) Individual Spatial Feature                                             #
                 # ****************************************************************************************************
@@ -875,7 +883,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 """
                 fig[fig_nr] = px.histogram(df_Cap2[feature], y="FundingSourceName",
                                            x='CapExDemand',
-                                           height=400, width=1100,
+                                           height=450, width=1100,
                                            orientation='h', color_discrete_sequence=colors)
                 fig[fig_nr].update_yaxes(categoryorder='total descending')
                 fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
@@ -901,7 +909,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 """
                 fig[fig_nr] = px.histogram(df_Cap3[feature], y="DepartmentName",
                                            x='CapExDemand',
-                                           height=600, width=1100,
+                                           height=650, width=1100,
                                            orientation='h', color_discrete_sequence=colors)
                 fig[fig_nr].update_yaxes(categoryorder='total descending')
                 fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
@@ -913,7 +921,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 #                         End Figure 5.x2 Departmental Funding Requests (For Each)                   #
                 # ****************************************************************************************************
                 # ****************************************************************************************************
-                #                         Table 5.x Summary Spatial Feature (For Each)                               #
+                #                         Table 5.x1 Summary Spatial Feature (For Each)                              #
                 # ****************************************************************************************************
                 document.add_page_break()
                 par_formatter(paragraphs14)
@@ -922,8 +930,9 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 heading_cells[0].text = 'Item'
                 heading_cells[1].text = 'Description'
                 # 1. Total Capital Demand per Spatial Feature All Years
-                tot_cap_dem_per_sf = format_budget(
-                    df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['Capital All Years'].iloc[0])
+                tot_cap_dem_per_sf_float = \
+                df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['Capital All Years'].iloc[0]
+                tot_cap_dem_per_sf = format_budget(tot_cap_dem_per_sf_float)
                 # 1b. Rank of Total Capital Demand per Spatial Feature All Years (1 is highest)
                 tot_cap_dem_per_sf_rank = int(
                     df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['CapAllRank'].iloc[0])
@@ -933,7 +942,7 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
 
                 # 2. MTREF Capital Demand per Spatial Feature MTREF
                 mtref_cap_dem_per_sf = format_budget(
-                    df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['Capital All Years'].iloc[0])
+                    df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['Capital MTREF'].iloc[0])
                 # 2b. Rank of Total Capital Demand per Spatial Feature All Years (1 is highest)
                 mtref_cap_dem_per_sf_rank = int(
                     df_EntireSet[df_EntireSet[SpatialFeatureChoice] == feature]['CapMTREFRank'].iloc[0])
@@ -974,8 +983,46 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 cells[1].text = f"{tot_projs_in_sf}\nRank: {tot_projs_in_sf_rank} (1 = Highest)"
                 tbl_nr += 1
                 # ****************************************************************************************************
-                #                       End Table 5.x Summary Spatial Feature (For Each)                             #
+                #                       End Table 5.x1 Summary Spatial Feature (For Each)                            #
                 # ****************************************************************************************************
+                # ****************************************************************************************************
+                #                         Table 5.x2 All Projects in Spatial Feature                                 #
+                # ****************************************************************************************************
+                par_formatter(paragraphs15)
+                table = document.add_table(rows=1, cols=4, style='List Table 4')
+                heading_cells = table.rows[0].cells
+                heading_cells[0].text = 'Project ID'
+                heading_cells[1].text = 'Project Name'
+                heading_cells[2].text = 'Department'
+                heading_cells[3].text = 'Project Budget'
+                for project in list(df_perward[feature].index):
+                    # Return only for the selected project
+                    mask3 = df_Cap3[feature]['ProjectId'] == project
+                    try:
+                        # Remember that only projects with budget demand will feature. The IndexError triggers when a project with
+                        # zero budget is sought but does not exist in this df.
+                        project_name = df_Cap3[feature][mask3]['Name'].iloc[0]
+                        department_name = df_Cap3[feature][mask3]['DepartmentName'].iloc[0]
+                        # Total capital demand for the project
+                        total_per_proj_float = df_Cap3[feature][mask3]['CapExDemand'].sum()
+                        total_per_proj = format_budget(total_per_proj_float)
+                        total_per_proj_perc_of_total = format_percent(total_per_proj_float / tot_cap_dem_per_sf_float)
+                        project_years_list = sorted(
+                            list(df_Cap3[feature][df_Cap3[feature]['ProjectId'] == project]['Interval'].unique()))
+                        project_years_list_str = [str(x) for x in project_years_list]
+                        project_years_string = (" and".join(", ".join(project_years_list_str).rsplit(',', 1)))
+                        cells = table.add_row().cells
+                        cells[0].text = f"{project}"
+                        cells[1].text = f"{project_name}"
+                        cells[2].text = f"{department_name}"
+                        cells[3].text = f"{total_per_proj} ({total_per_proj_perc_of_total})\nBudget spread across:" \
+                                        f" {project_years_string}"
+                    except IndexError:
+                        pass
+                # ****************************************************************************************************
+                #                         End Table 5.x2 All Projects in Spatial Feature                             #
+                # ****************************************************************************************************
+                par_formatter(paragraphs16)
                 # ****************************************************************************************************
                 #  END 5. Summary per Spatial Feature                                                                #
                 # ****************************************************************************************************
