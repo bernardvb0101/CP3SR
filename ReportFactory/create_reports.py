@@ -9,8 +9,8 @@ from Utilities.create_sub_dfs import return_frames
 
 
 
-def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_intersects2, df_EntireSet, df_perward,
-                   df_CapexBudgetDemandCatalogue3, df_MapServiceIntersections):
+def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_perward, df_MapServiceIntersections,
+                   df_CapexBudgetDemandCatalogue, df_ProjectCatalogue):
     """
     This module creates a spatial report in a MSWord File
     """
@@ -23,6 +23,8 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
     heading_no = 1
     fig_nr = 1
     tbl_nr = 1
+    df_CapexBudgetDemandCatalogue3 = df_CapexBudgetDemandCatalogue.merge(df_ProjectCatalogue,
+                                                                         on='ProjectId')
     # *********************************************************************************************************
     #                                      END OF INITIALISE KEY VARIABLES                                    #
     # *********************************************************************************************************
@@ -690,8 +692,8 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
             fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
             fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
             """
-            fig[fig_nr] = px.histogram(df_CapexBudgetDemandCatalogue2, y="FundingSourceName",
-                                  x='CapExDemand',
+            fig[fig_nr] = px.histogram(df_CapexBudgetDemandCatalogue, y="FundingSourceName",
+                                  x="Amount",
                                   height=1100, width=1100,
                                   orientation='h', color_discrete_sequence=colors)
             fig[fig_nr].update_yaxes(categoryorder='total descending')
@@ -715,8 +717,9 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
             fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
             fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
             """
+
             fig[fig_nr] = px.histogram(df_CapexBudgetDemandCatalogue3, y="DepartmentName",
-                                       x='CapExDemand',
+                                       x="Amount",
                                        height=1100, width=1100,
                                        orientation='h', color_discrete_sequence=colors)
             fig[fig_nr].update_yaxes(categoryorder='total descending')
@@ -872,15 +875,13 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 # ****************************************************************************************************
                 #                         Figure 5.x1 Funding Source Spatial Feature (For Each)                      #
                 # ****************************************************************************************************
+                list_prjs_sf = list(df_perward[feature].index)
                 df_Cap2 = {}
-                df_Cap2[feature] = df_CapexBudgetDemandCatalogue2[
-                    df_CapexBudgetDemandCatalogue2['FeatureClassName'] == feature]
-                """
-                fig[fig_nr] = px.pie(df_Cap2[feature], values='CapExDemand', names="FundingSourceName")
-                fig[fig_nr].update_traces(marker=dict(colors=colors))
-                fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
-                fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
-                """
+                df_Cap2[feature] = df_CapexBudgetDemandCatalogue3[
+                    df_CapexBudgetDemandCatalogue3['ProjectId'].isin(list_prjs_sf)]
+                df_Cap2[feature]['CapExDemand'] = df_Cap2[feature].apply(
+                    lambda row: row.Amount * df_perward[feature][row.ProjectId], axis=1)
+
                 fig[fig_nr] = px.histogram(df_Cap2[feature], y="FundingSourceName",
                                            x='CapExDemand',
                                            height=450, width=1100,
@@ -898,16 +899,8 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 # ****************************************************************************************************
                 #                         Figure 5.x2 Departmental Funding Requests (For Each)                       #
                 # ****************************************************************************************************
-                df_Cap3 = {}
-                df_Cap3[feature] = df_CapexBudgetDemandCatalogue3[
-                    df_CapexBudgetDemandCatalogue3['FeatureClassName'] == feature]
-                """
-                fig[fig_nr] = px.pie(df_Cap3[feature], values='CapExDemand', names="DepartmentName")
-                fig[fig_nr].update_traces(marker=dict(colors=colors))
-                fig[fig_nr].update_layout(legend=dict(yanchor="bottom", y=-0.3, xanchor="right", x=0))
-                fig[fig_nr].update_layout(uniformtext_minsize=10, uniformtext_mode='show')
-                """
-                fig[fig_nr] = px.histogram(df_Cap3[feature], y="DepartmentName",
+
+                fig[fig_nr] = px.histogram(df_Cap2[feature], y="DepartmentName",
                                            x='CapExDemand',
                                            height=650, width=1100,
                                            orientation='h', color_discrete_sequence=colors)
@@ -997,18 +990,18 @@ def create_worddoc(var_dict, baseline_dict, df_CapexBudgetDemandCatalogue2, df_i
                 heading_cells[3].text = 'Project Budget'
                 for project in list(df_perward[feature].index):
                     # Return only for the selected project
-                    mask3 = df_Cap3[feature]['ProjectId'] == project
+                    mask3 = df_Cap2[feature]['ProjectId'] == project
                     try:
                         # Remember that only projects with budget demand will feature. The IndexError triggers when a project with
                         # zero budget is sought but does not exist in this df.
-                        project_name = df_Cap3[feature][mask3]['Name'].iloc[0]
-                        department_name = df_Cap3[feature][mask3]['DepartmentName'].iloc[0]
+                        project_name = df_Cap2[feature][mask3]['Name'].iloc[0]
+                        department_name = df_Cap2[feature][mask3]['DepartmentName'].iloc[0]
                         # Total capital demand for the project
-                        total_per_proj_float = df_Cap3[feature][mask3]['CapExDemand'].sum()
+                        total_per_proj_float = df_Cap2[feature][mask3]['CapExDemand'].sum()
                         total_per_proj = format_budget(total_per_proj_float)
                         total_per_proj_perc_of_total = format_percent(total_per_proj_float / tot_cap_dem_per_sf_float)
                         project_years_list = sorted(
-                            list(df_Cap3[feature][df_Cap3[feature]['ProjectId'] == project]['Interval'].unique()))
+                            list(df_Cap2[feature][df_Cap2[feature]['ProjectId'] == project]['Interval'].unique()))
                         project_years_list_str = [str(x) for x in project_years_list]
                         project_years_string = (" and".join(", ".join(project_years_list_str).rsplit(',', 1)))
                         cells = table.add_row().cells

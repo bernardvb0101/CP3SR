@@ -225,11 +225,12 @@ def home():
                     feature_intersect_dict = {}
                     # Create a master dictionary with each spatial feature as a key
                     # Each key (e.g. ward) contains another dictionary with project number as key and percentage intersect as value
+                    sub_frame = {}
                     for feature in list_of_features:
-                        sub_frame = df_MapServiceIntersections[
+                        sub_frame[feature] = df_MapServiceIntersections[
                             df_MapServiceIntersections["FeatureClassName"] == feature]
                         project_dict = {}
-                        for row in sub_frame.itertuples():
+                        for row in sub_frame[feature].itertuples():
                             project_dict[row.ProjectId] = row.PercentageIntersect
                         feature_intersect_dict[feature] = project_dict
                     # Now this dictionary can be used to query spatial feature to get to the projects and their intersects.
@@ -241,22 +242,19 @@ def home():
                     df_FeatureIntersectPer.replace(np.nan, 0, inplace=True)
 
                     # Create a modified df_CapexBudgetDemandCatalogue by combining it with df_MapServiceIntersections
-                    df_CapexBudgetDemandCatalogue2 = df_CapexBudgetDemandCatalogue.merge(df_MapServiceIntersections,
-                                                                                         on='ProjectId')
+                    #df_CapexBudgetDemandCatalogue2 = df_CapexBudgetDemandCatalogue.merge(df_MapServiceIntersections,
+                    #                                                                     on='ProjectId')
                     # Add a column ('CapExDemand') for the 'Amount' multiplied by the 'PercentageIntersect'
-                    df_CapexBudgetDemandCatalogue2["CapExDemand"] = df_CapexBudgetDemandCatalogue2["Amount"] * \
-                                                                    df_CapexBudgetDemandCatalogue2[
-                                                                        "PercentageIntersect"]
+                    #df_CapexBudgetDemandCatalogue2["CapExDemand"] = df_CapexBudgetDemandCatalogue2["Amount"] * \
+                    #                                                df_CapexBudgetDemandCatalogue2[
+                    #                                                    "PercentageIntersect"]
 
-                    df_CapexBudgetDemandCatalogue3 = df_CapexBudgetDemandCatalogue2.merge(df_ProjectCatalogue,
-                                                                                          on='ProjectId')
-
-
+                    #df_CapexBudgetDemandCatalogue3 = df_CapexBudgetDemandCatalogue2.merge(df_ProjectCatalogue,
+                    #                                                                      on='ProjectId')
 
                     # ********************************************************************************************
                     # Build df_EntireSet with columns for each fin year
-                    # 1) Chosen Feature 2) No of Projs in Chosen Feature 3) Total Capital Demand in Chosen Feature
-                    # 4) Capital Demand in Chosen Feature per Year
+                    # 1) Chosen Feature 2) No of Projs in Chosen Feature 3) Total Capital Demand in Chosen Feature 4) Capital Demand in Chosen Feature per Year
                     list_nr = []  # List with number of projects in a ward
                     list_cost = {}  # list_cost[2022], etc
                     list_cost['Total'] = []
@@ -287,27 +285,23 @@ def home():
                         for index in df_perward[feature].index:  # 'index' is the project number
                             # The 'df_perward[feature]' ensures the project exist in that ward
                             # Create a mask for the project number represented by 'index'
-                            mask1 = df_CapexBudgetDemandCatalogue2['ProjectId'] == index  # Mask per project
-                            df_mask1 = df_CapexBudgetDemandCatalogue2[
+                            mask1 = df_CapexBudgetDemandCatalogue['ProjectId'] == index  # Mask per project
+                            df_mask1 = df_CapexBudgetDemandCatalogue[
                                 mask1]  # A dataframe for that mask for just that project ('index')
 
-                            # mask 2 is the chosen spatial feature - we must have this mask because a project may be in more than one
-                            # spatial feature as returned by mask 1 which is the specific project mask
-                            mask2 = df_mask1[
-                                        'FeatureClassName'] == feature  # Mask per spatial feature inside the project df
-                            df_mask2 = df_mask1[
-                                mask2]  # A dataframe for mask2 - so now its is reduced to a specific project and spatial feature
-
-                            # mask3 is for s specific year
+                            # mask3 is for a specific year
                             for year in list_of_years:
-                                mask3_dict[year] = df_mask2['Interval'] == year  # There is a mask for each year
-                                df_mask3_dict[year] = df_mask2[mask3_dict[
-                                    year]]  # Create a dataframe for each year 1) Project -> 2) SPatial Feature -> 3) Year
+                                mask3_dict[year] = df_mask1['Interval'] == year  # There is a mask for each year
+                                df_mask3_dict[year] = df_mask1[mask3_dict[
+                                    year]]  # Create a dataframe for each year 1) Project -> 2) Year
                                 try:
-                                    project_year_total[year] += float(df_mask3_dict[year]['CapExDemand'].iloc[0])
-                                    project_total += float(df_mask3_dict[year]['CapExDemand'].iloc[0])
+                                    project_year_total[year] += float(df_mask3_dict[year]['Amount'].sum()) * \
+                                                                df_perward[feature][index]
+                                    project_total += float(df_mask3_dict[year]['Amount'].sum()) * df_perward[feature][
+                                        index]
                                     if year in list_of_years[0:3]:
-                                        mtref_total += float(df_mask3_dict[year]['CapExDemand'].iloc[0])
+                                        mtref_total += float(df_mask3_dict[year]['Amount'].sum()) * \
+                                                       df_perward[feature][index]
                                 except IndexError:  # If there is no year, an index error is returned. The populate the list with a zero.
                                     project_year_total[year] += 0
                                     project_total += 0
@@ -369,11 +363,11 @@ def home():
                     control_growth_of_docx()
                     # Now create the spatial feature report
                     path = create_worddoc(var_dict=var_dict, baseline_dict=baseline_cat_dict,
-                                          df_CapexBudgetDemandCatalogue2=df_CapexBudgetDemandCatalogue2,
                                           df_intersects2=df_Intersects2,
                                           df_EntireSet=df_EntireSet, df_perward=df_perward,
-                                          df_CapexBudgetDemandCatalogue3=df_CapexBudgetDemandCatalogue3,
-                                          df_MapServiceIntersections=df_MapServiceIntersections)
+                                          df_MapServiceIntersections=df_MapServiceIntersections,
+                                          df_CapexBudgetDemandCatalogue=df_CapexBudgetDemandCatalogue,
+                                          df_ProjectCatalogue=df_ProjectCatalogue)
                     return send_file(path, as_attachment=True)
                 else:
                     nav_stage = 2
