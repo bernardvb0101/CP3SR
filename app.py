@@ -241,17 +241,6 @@ def home():
                     # Replace all the NaN's with zeros
                     df_FeatureIntersectPer.replace(np.nan, 0, inplace=True)
 
-                    # Create a modified df_CapexBudgetDemandCatalogue by combining it with df_MapServiceIntersections
-                    #df_CapexBudgetDemandCatalogue2 = df_CapexBudgetDemandCatalogue.merge(df_MapServiceIntersections,
-                    #                                                                     on='ProjectId')
-                    # Add a column ('CapExDemand') for the 'Amount' multiplied by the 'PercentageIntersect'
-                    #df_CapexBudgetDemandCatalogue2["CapExDemand"] = df_CapexBudgetDemandCatalogue2["Amount"] * \
-                    #                                                df_CapexBudgetDemandCatalogue2[
-                    #                                                    "PercentageIntersect"]
-
-                    #df_CapexBudgetDemandCatalogue3 = df_CapexBudgetDemandCatalogue2.merge(df_ProjectCatalogue,
-                    #                                                                      on='ProjectId')
-
                     # ********************************************************************************************
                     # Build df_EntireSet with columns for each fin year
                     # 1) Chosen Feature 2) No of Projs in Chosen Feature 3) Total Capital Demand in Chosen Feature 4) Capital Demand in Chosen Feature per Year
@@ -335,13 +324,6 @@ def home():
                     df_EntireSet["CapMTREFRank"] = df_EntireSet['Capital MTREF'].rank(ascending=False)
                     df_EntireSet["NoProjectsRank"] = df_EntireSet[f'Projects per {SpatialFeatureChoice}'].rank(
                         ascending=False)
-                    """
-                    df_EntireSet looks like this: (df_subsets also!)
-                        City of Tshwane Wards	Projects per City of Tshwane Wards	Capital Demand per City of Tshwane Wards
-                    0	Ward 58	                85	                                5.605180e+08
-                    1	Ward 66	                8	                                1.557022e+0
-                    ...
-                    """
 
                     # Wrap all the loose variables in a dictionary for use in the report
                     var_dict = {}

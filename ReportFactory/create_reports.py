@@ -852,6 +852,7 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
                 headings5b = {"2": f"{correct_wording}"}
 
                 paragraphs12 = {"1 cp": f"Figure {heading_no}.{fig_nr}: {correct_wording} Funding Requests"}
+                paragraphs12b = {"1 b": f"\nNo projects in {correct_wording}."}
                 paragraphs13 = {
                     "1 cp": f"Figure {heading_no}.{fig_nr + 1}: {correct_wording} Departmental Requests"}
                 paragraphs14 = {"1 cp": f"Table {heading_no}.{tbl_nr}: Summary - {correct_wording}"}
@@ -879,19 +880,25 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
                 df_Cap2 = {}
                 df_Cap2[feature] = df_CapexBudgetDemandCatalogue3[
                     df_CapexBudgetDemandCatalogue3['ProjectId'].isin(list_prjs_sf)]
-                df_Cap2[feature]['CapExDemand'] = df_Cap2[feature].apply(
-                    lambda row: row.Amount * df_perward[feature][row.ProjectId], axis=1)
-
-                fig[fig_nr] = px.histogram(df_Cap2[feature], y="FundingSourceName",
-                                           x='CapExDemand',
-                                           height=450, width=1100,
-                                           orientation='h', color_discrete_sequence=colors)
-                fig[fig_nr].update_yaxes(categoryorder='total descending')
-                fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
-                fig[fig_nr].update_layout(barmode='stack')
-                fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
-                document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
-                fig_nr += 1
+                if not df_Cap2[feature].empty: # If Dataframe is not empty
+                    df_Cap2[feature]['CapExDemand'] = df_Cap2[feature].apply(
+                        lambda row: row.Amount * df_perward[feature][row.ProjectId], axis=1)
+                    fig[fig_nr] = px.histogram(df_Cap2[feature], y="FundingSourceName",
+                                               x='CapExDemand',
+                                               height=450, width=1100,
+                                               orientation='h', color_discrete_sequence=colors)
+                    fig[fig_nr].update_yaxes(categoryorder='total descending')
+                    fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+                    fig[fig_nr].update_layout(barmode='stack')
+                    fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
+                    document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
+                    fig_nr += 1
+                else:
+                    par_formatter(paragraphs12b)
+                    # print(list_of_features[0])
+                    # print(feature)
+                    # print(df_Cap2[feature])
+                    # print(df_perward[feature])
                 # ****************************************************************************************************
                 #                         End Figure 5.x1 Funding Source Spatial Feature (For Each)                  #
                 # ****************************************************************************************************
@@ -899,17 +906,19 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
                 # ****************************************************************************************************
                 #                         Figure 5.x2 Departmental Funding Requests (For Each)                       #
                 # ****************************************************************************************************
-
-                fig[fig_nr] = px.histogram(df_Cap2[feature], y="DepartmentName",
-                                           x='CapExDemand',
-                                           height=650, width=1100,
-                                           orientation='h', color_discrete_sequence=colors)
-                fig[fig_nr].update_yaxes(categoryorder='total descending')
-                fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
-                fig[fig_nr].update_layout(barmode='stack')
-                fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
-                document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
-                fig_nr += 1
+                if not df_Cap2[feature].empty: # If Dataframe is not empty
+                    fig[fig_nr] = px.histogram(df_Cap2[feature], y="DepartmentName",
+                                               x='CapExDemand',
+                                               height=650, width=1100,
+                                               orientation='h', color_discrete_sequence=colors)
+                    fig[fig_nr].update_yaxes(categoryorder='total descending')
+                    fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+                    fig[fig_nr].update_layout(barmode='stack')
+                    fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
+                    document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
+                    fig_nr += 1
+                else:
+                    par_formatter(paragraphs12b)
                 # ****************************************************************************************************
                 #                         End Figure 5.x2 Departmental Funding Requests (For Each)                   #
                 # ****************************************************************************************************
