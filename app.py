@@ -62,7 +62,7 @@ app.config['DOWNLOAD_FOLDER'] = "/DOWNLOAD_FOLDER"
 def home():
     global all_well, url_choice, url_list, spatial_var, username, password, grant_type, org_choice
     global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var, entityname_list
-    global layer_list, number_of_plots, nav_stage, entity_choice
+    global layer_list, number_of_plots, nav_stage, entity_choice, org_choice
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
     global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2
 
@@ -329,6 +329,7 @@ def home():
                     var_dict = {}
                     # var_dict['username'] = sys_username
                     var_dict['url_choice'] = url_choice
+                    var_dict['org_choice'] = org_choice
                     var_dict['entity_choice'] = entity_choice
                     var_dict['SpatialFeatureChoice'] = SpatialFeatureChoice
                     var_dict['Layer_List'] = layer_list
