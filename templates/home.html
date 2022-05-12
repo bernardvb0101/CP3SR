@@ -23,7 +23,7 @@
 
 <div class="container"> <!-- Container 2 for URLs and inputs fields -->
 
-    <form action="{{ url_for('home') }}" method="POST">
+    <form action="{{ url_for('home') }}" method="POST" enctype = "multipart/form-data">
 
       <div class="row justify-content-center">  <!--Row 2 Heading for URL list / chosen URL -->
         <div class="col-4 p-3 border bg-light">
@@ -97,21 +97,39 @@
             </div>
         </div> <!-- col4 1  -->
       </div> <!-- End Row 4  -->
+
+      <div class="row justify-content-center"> <!-- Row 5 Start -->
+        <div class="col-4 p-3 border bg-light"> <!-- Col 4 1 Start -->
+          <div class="border bg-light border-danger rounded d-grid col-12 mx-auto">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="row">
+                    <ul class=flashes>
+                    {% for message in messages %}
+                        <p class="text-center" style="color:#0e0eeb"><br>{{ message }}</p>
+                    {% endfor %}
+                    </ul>
+                </div>
+              {% endif %}
+            {% endwith %}
+          </div>
+        </div> <!-- col4 1  -->
+      </div> <!-- End Row 5  -->
+
+      <div class="row justify-content-center"> <!-- Row 6 Start -->
+        <div class="col-4 p-3 border bg-light"> <!-- Col 4 1 Start -->
+          <div class="border bg-light border-danger rounded d-grid col-12 mx-auto">
+              <button id="c2" name="Download_Sites" value="Download_Sites" type="submit" class="btn btn-dark m-3">Download sites template</button> <!-- Download JSON file -->
+              <button class="btn btn-dark mx-3" name="Upload_Sites" value="Upload_Sites" type="submit" id="c1">Upload revised sites template</button>
+              <input type="file" name="file" class="form-control mx-3 mb-3 w-auto" id="file" aria-describedby="c1" aria-label="Upload">
+              <!-- <button id="c1" name="Upload_Sites" value="Upload_Sites" type="submit" class="btn btn-dark m-3">Upload sites</button>  -->
+          </div>
+        </div> <!-- col4 1  -->
+      </div> <!-- End Row 6  -->
+
     </form> <!-- End form -->
 
 </div> <!-- End div container 2 -->
-
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <div class="row">
-        <ul class=flashes>
-        {% for message in messages %}
-            <p class="text-center" style="color:#0e0eeb"><br>{{ message }}</p>
-        {% endfor %}
-        </ul>
-    </div>
-  {% endif %}
-{% endwith %}
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>

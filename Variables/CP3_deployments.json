@@ -1,6 +1,1 @@
-[{"org": "Tshwane", "entity_name": "City of Tshwane Metropolitan Municipality", "cp3_url" : "https://www.tshwane.cp3.co.za/"},
-  {"org": "Johannesburg", "entity_name": "City of Johannesburg Metropolitan Municipality", "cp3_url" : "https://www.joburg.cp3.co.za/"},
-  {"org": "Midvaal", "entity_name": "Midvaal Municipality", "cp3_url" : "https://www.midvaal.cp3.co.za/"},
-  {"org": "Lekwa", "entity_name": "Lekwa Municipality", "cp3_url" : "https://www.lekwa.cp3.co.za/"}]
-
-
+[{"org": "Tshwane", "entity_name": "City of Tshwane Metropolitan Municipality", "cp3_url": "https://www.tshwane.cp3.co.za/"}, {"org": "Johannesburg", "entity_name": "City of Johannesburg Metropolitan Municipality", "cp3_url": "https://www.joburg.cp3.co.za/"}, {"org": "Midvaal", "entity_name": "Midvaal Municipality", "cp3_url": "https://www.midvaal.cp3.co.za/"}, {"org": "Lekwa", "entity_name": "Lekwa Municipality", "cp3_url": "https://www.lekwa.cp3.co.za/"}]

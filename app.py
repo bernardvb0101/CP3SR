@@ -1,10 +1,17 @@
-from flask import Flask, render_template, request, flash, send_file, redirect, url_for
+from flask import Flask, render_template, request, flash, send_file
 import pandas as pd
 import numpy as np
 import json
+import os
+from werkzeug.utils import secure_filename
+from Utilities.file_exists import allowed_file
 from Utilities.url_exists import URL_exists
-from Utilities.control_growth import control_growth_of_docx
+from Utilities.control_growth import control_growth_of_docx, control_growth_of_xlsx
 from Utilities.get_url_vars import vars_from_json_file, read_source_file
+from Utilities.Convert_to_Excel import write_to_xls
+from Utilities.Convert_to_JSON import write_to_JSON_file
+from Utilities.Read_from_Excel import read_from_excel
+from Utilities.Read_from_JSON import read_json_file
 from Utilities.get_API_vars import API_vars_json_file
 from CP3_API_calls.Create_API_Variables import create_vars
 from CP3_API_calls.BaselineCatalogue import baseline_catalogue
@@ -48,6 +55,7 @@ else:
     entity_choice = []
 
 spatial_var = []
+upload_file = False
 # sys_username = "Bernard"
 # This part of the credentials for the API call (to my understanding) is default allways "password"
 
@@ -55,8 +63,17 @@ spatial_var = []
 app = Flask(__name__)  # to make the app run without any
 
 #app.config['SECRET_KEY'] = os.urandom(24)
+# Configure a secret key for flask app
 app.config['SECRET_KEY'] = '/sdasd!@#CVVWRER12_'
-app.config['DOWNLOAD_FOLDER'] = "/DOWNLOAD_FOLDER"
+DOWNLOAD_FOLDER = "/DOWNLOAD_FOLDER"
+excel_file_path = f".{DOWNLOAD_FOLDER}/CP3_sites.xlsx"
+# Configure an download folder for flask app
+app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
+UPLOAD_FOLDER = "./Variables"
+# Configure an upload folder for flask app
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Set 1 MB file upload limit
+app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024
 
 
 # This route is the "home" route that redirects immediately to "home_in.html"
@@ -68,8 +85,9 @@ def home():
     A MSWord document is returned containing an analysis of the spatial feature that was selected.
     """
     global all_well, url_choice, url_list, spatial_var, username, password, grant_type, org_choice
+    global returned_combined_list, org_list, json_file_ok
     global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var, entityname_list
-    global layer_list, number_of_plots, nav_stage, entity_choice
+    global layer_list, number_of_plots, nav_stage, entity_choice, upload_file, excel_file_path
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
     global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2
 
@@ -80,6 +98,8 @@ def home():
             button_1stAPI = request.form.get("call_1st_APIs")
             button_2ndAPI = request.form.get("call_2nd_APIs")
             button_dlreport = request.form.get("download_report")
+            button_upload = request.form.get("Upload_Sites")
+            button_download = request.form.get("Download_Sites")
 
             if button_1stAPI is not None and nav_stage == 1:  # Pressed the button to call an API
                 # The all_well variable is zero if no APIs were returned successfully yet
@@ -165,14 +185,15 @@ def home():
                 # If nav_stage is 2, the user would be able to call the 2nd APIs, otherwise he will just get a fault
                 # message and stay on the page with the url choices and username and password
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var,
-                                       SpatialFeatureChoice=SpatialFeatureChoice)
+                                       url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
+                                       SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
 
             elif button_1stAPI is not None and (nav_stage == 2 or nav_stage ==3):  # Pressed the button to select a another site
                 nav_stage = 1
+                flash("Select another site.")
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var,
-                                       SpatialFeatureChoice=SpatialFeatureChoice)
+                                       url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
+                                       SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
 
             elif button_2ndAPI is not None and (nav_stage == 2 or nav_stage ==3): # Calling the 2nd set of APIs
                 SpatialFeatureChoice = request.form['inputGroupSelect01']
@@ -190,11 +211,12 @@ def home():
                               f"You may now download a spatial feature report (MS Word) on {SpatialFeatureChoice}.")
                         nav_stage = 3
                 else:
+                    SpatialFeatureChoice = ""
                     flash("You need to select spatial feature.")
 
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var,
-                                       SpatialFeatureChoice=SpatialFeatureChoice)
+                                       url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
+                                       SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
 
             elif button_dlreport is not None and nav_stage == 3:  # Calling the report
                 SpatialFeatureChoice = request.form['inputGroupSelect01']
@@ -323,7 +345,6 @@ def home():
                         column_name_list.append(f'Capital {year}')
                         df_EntireSet[f'Capital {year}'] = list_cost[year]
 
-
                     # Now sort the dataset in order of number of projects from largest to smallest
                     df_EntireSet.sort_values(f'Projects per {SpatialFeatureChoice}', inplace=True, ascending=True)
                     # Modify df_EntireSet by adding columns to rank
@@ -364,32 +385,69 @@ def home():
                     flash(f"There are no spatial intersects on {SpatialFeatureChoice}. A spatial feature report can "
                           f"therefore not be generated.")
                     return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                           url_list=url_list, spatial_var=spatial_var,
-                                           SpatialFeatureChoice=SpatialFeatureChoice)
+                                           url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
+                                           SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
             elif button_dlreport is not None and nav_stage == 2:  # User pressed the report button again but did not load the spatial features again
                 nav_stage = 2
                 flash("You selected to download a report again without having loaded the variables required for your "
                       "newly selected spatial feature selection. Please press the '2. Call selected spatial feature "
                       "variables' before attempting to download a spatial report again.")
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var,
-                                       SpatialFeatureChoice=SpatialFeatureChoice)
+                                       url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
+                                       SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
+            elif button_upload is not None:  # User wishes to upload a json file
+                file = request.files['file']
+                if file.filename == '':  # File was not selected
+                    flash('No selected file to upload.')
+                elif file and allowed_file(file.filename):  # File extension checked and is ok ('.xlsx')
+                    # Step 1: Upload the .xlsx file and save it under the upload folder
+                    filename = secure_filename(file.filename)
+                    upload_path_var = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(upload_path_var)
+                    # Step 2: Read the file into a variable
+                    returned_data = read_from_excel(upload_path_var)
+                    # Step 3: Write the variable into the json file used by the system 'CP3_deployments.json'
+                    write_to_JSON_file(returned_data, url_vars_file_path)
+                    # Step 4: Re-populate the variables
+                    returned_combined_list = vars_from_json_file(url_vars_file_path)
+                    org_list = returned_combined_list[1]
+                    entityname_list = returned_combined_list[2]
+                    url_list = returned_combined_list[3]
+                    json_file_ok = returned_combined_list[0][0]
+                    flash('New list uploaded!')
+                else:  # The only remaining option is that the wrong file extension was chosen.
+                    flash("Wrong extension type for upload. Must be '.xlsx'")
 
+                # Check the growth of files in the folder and reduce it
+                control_growth_of_xlsx(f'.{UPLOAD_FOLDER}/*.xlsx')
 
+                return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
+                                       url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
+                                       SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
 
+            elif button_download is not None:  # User wishes to download the MSExcel file with all the sites
+                upload_file = True
+                # Check the growth of files in the folder and reduce it
+                control_growth_of_xlsx(f'.{DOWNLOAD_FOLDER}/*.xlsx')
+                # Step 1: Read file at 'url_vars_file_path'
+                json_var_from_file = read_json_file(url_vars_file_path)
+                # Step 2: Convert to Excel
+                excel_file_path = write_to_xls(json_var_from_file)
+                # Step 3: Download to browser
+                flash('Template dowloaded.')
+                return send_file(excel_file_path, as_attachment=True)
 
         else:  # Get not Post, in other words when it lands
             return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                   url_list=url_list, spatial_var=spatial_var,
-                                   SpatialFeatureChoice=SpatialFeatureChoice)
+                                   url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
+                                   SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
 
     else:  # json_file_ok == False
         if request.method == 'GET':
             flash(returned_combined_list[0][1])
         return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                               url_list=url_list, spatial_var=spatial_var,
-                               SpatialFeatureChoice=SpatialFeatureChoice)
-
+                               url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
+                               SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
 
 
 #  **********************************************************************************
@@ -779,7 +837,6 @@ def cp3report():
             master_dict = {}
             master_dict["message"] = "Use '?site=help' for instructions."
             return json.dumps(master_dict["message"], indent=4)
-
 
 
 # This is required for the programme to run
