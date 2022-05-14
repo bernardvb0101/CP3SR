@@ -133,6 +133,7 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
             # Sort images to follow each other
             fig_t[plot_no][temp_fig[plot_no]].update_yaxes(categoryorder='total descending')
             fig_t[plot_no][temp_fig[plot_no]].update_coloraxes(colorbar_tickprefix='R', colorbar_tickformat=',.')
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(separators=". ")
             # Write images to png
             fig_t[plot_no][temp_fig[plot_no]].write_image(f"./static/images/fig{temp_fig[plot_no]}{plot_no}.png")
             # Add a page break
@@ -170,7 +171,8 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
                                                              nbins=len(df_subs[plot_no - 1]), height=1500, width=1100,
                                                              orientation='h', color_discrete_sequence=colors)
             fig_t[plot_no][temp_fig[plot_no]].update_yaxes(categoryorder='total descending')
-            fig_t[plot_no][temp_fig[plot_no]].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(xaxis_tickprefix='R', xaxis_tickangle=45)
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(separators=". ")
             fig_t[plot_no][temp_fig[plot_no]].update_layout(barmode='stack')
             fig_t[plot_no][temp_fig[plot_no]].update_layout(legend_title="Capital Demand MTREF")
 
@@ -213,7 +215,8 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
                                                              nbins=len(df_subs[plot_no - 1]), height=1500, width=1100,
                                                              orientation='h', color_discrete_sequence=colors)
             fig_t[plot_no][temp_fig[plot_no]].update_yaxes(categoryorder='total descending')
-            fig_t[plot_no][temp_fig[plot_no]].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(xaxis_tickprefix='R', xaxis_tickangle=45)
+            fig_t[plot_no][temp_fig[plot_no]].update_layout(separators=". ")
             fig_t[plot_no][temp_fig[plot_no]].update_layout(barmode='stack')
             fig_t[plot_no][temp_fig[plot_no]].update_layout(legend_title="Capital Demand All Years")
             # Write images to png
@@ -747,7 +750,8 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
                                   height=1100, width=1100,
                                   orientation='h', color_discrete_sequence=colors)
             fig[fig_nr].update_yaxes(categoryorder='total descending')
-            fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+            fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickangle=45)
+            fig[fig_nr].update_layout(separators=". ")
             fig[fig_nr].update_layout(barmode='stack')
             fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
             document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
@@ -767,7 +771,8 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
                                        height=1100, width=1100,
                                        orientation='h', color_discrete_sequence=colors)
             fig[fig_nr].update_yaxes(categoryorder='total descending')
-            fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+            fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickangle=45)
+            fig[fig_nr].update_layout(separators=". ")
             fig[fig_nr].update_layout(barmode='stack')
             fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
             document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
@@ -934,7 +939,8 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
                                                height=450, width=1100,
                                                orientation='h', color_discrete_sequence=colors)
                     fig[fig_nr].update_yaxes(categoryorder='total descending')
-                    fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+                    fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickangle = 45)
+                    fig[fig_nr].update_layout(separators=". ")
                     fig[fig_nr].update_layout(barmode='stack')
                     fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
                     document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))
@@ -958,7 +964,8 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
                                                height=650, width=1100,
                                                orientation='h', color_discrete_sequence=colors)
                     fig[fig_nr].update_yaxes(categoryorder='total descending')
-                    fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickformat=',.')
+                    fig[fig_nr].update_layout(xaxis_tickprefix='R', xaxis_tickangle=45)
+                    fig[fig_nr].update_layout(separators=". ")
                     fig[fig_nr].update_layout(barmode='stack')
                     fig[fig_nr].write_image(f"./static/images/fig{fig_nr}.png")
                     document.add_picture(f"./static/images/fig{fig_nr}.png", width=Cm(18))

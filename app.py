@@ -55,7 +55,6 @@ else:
     entity_choice = []
 
 spatial_var = []
-upload_file = False
 # sys_username = "Bernard"
 # This part of the credentials for the API call (to my understanding) is default allways "password"
 
@@ -87,7 +86,7 @@ def home():
     global all_well, url_choice, url_list, spatial_var, username, password, grant_type, org_choice
     global returned_combined_list, org_list, json_file_ok
     global API_call_dict, layer_dict, SpatialFeatureChoice, SpecificFeature, spatial_var, entityname_list
-    global layer_list, number_of_plots, nav_stage, entity_choice, upload_file, excel_file_path
+    global layer_list, number_of_plots, nav_stage, entity_choice, excel_file_path, API_vars_file_path
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
     global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2
 
@@ -98,8 +97,10 @@ def home():
             button_1stAPI = request.form.get("call_1st_APIs")
             button_2ndAPI = request.form.get("call_2nd_APIs")
             button_dlreport = request.form.get("download_report")
-            button_upload = request.form.get("Upload_Sites")
-            button_download = request.form.get("Download_Sites")
+            button_url_upload = request.form.get("Upload_Sites")
+            button__url_download = request.form.get("Download_Sites")
+            button_api_upload = request.form.get("Upload_Credentials")
+            button__api_download = request.form.get("Download_Credentials")
 
             if button_1stAPI is not None and nav_stage == 1:  # Pressed the button to call an API
                 # The all_well variable is zero if no APIs were returned successfully yet
@@ -185,15 +186,15 @@ def home():
                 # If nav_stage is 2, the user would be able to call the 2nd APIs, otherwise he will just get a fault
                 # message and stay on the page with the url choices and username and password
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
-                                       SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
+                                       url_list=url_list, spatial_var=spatial_var,
+                                       SpatialFeatureChoice=SpatialFeatureChoice)
 
             elif button_1stAPI is not None and (nav_stage == 2 or nav_stage ==3):  # Pressed the button to select a another site
                 nav_stage = 1
                 flash("Select another site.")
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
-                                       SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
+                                       url_list=url_list, spatial_var=spatial_var,
+                                       SpatialFeatureChoice=SpatialFeatureChoice)
 
             elif button_2ndAPI is not None and (nav_stage == 2 or nav_stage ==3): # Calling the 2nd set of APIs
                 SpatialFeatureChoice = request.form['inputGroupSelect01']
@@ -215,8 +216,8 @@ def home():
                     flash("You need to select spatial feature.")
 
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
-                                       SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
+                                       url_list=url_list, spatial_var=spatial_var,
+                                       SpatialFeatureChoice=SpatialFeatureChoice)
 
             elif button_dlreport is not None and nav_stage == 3:  # Calling the report
                 SpatialFeatureChoice = request.form['inputGroupSelect01']
@@ -385,17 +386,17 @@ def home():
                     flash(f"There are no spatial intersects on {SpatialFeatureChoice}. A spatial feature report can "
                           f"therefore not be generated.")
                     return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                           url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
-                                           SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
+                                           url_list=url_list, spatial_var=spatial_var,
+                                           SpatialFeatureChoice=SpatialFeatureChoice)
             elif button_dlreport is not None and nav_stage == 2:  # User pressed the report button again but did not load the spatial features again
                 nav_stage = 2
                 flash("You selected to download a report again without having loaded the variables required for your "
                       "newly selected spatial feature selection. Please press the '2. Call selected spatial feature "
                       "variables' before attempting to download a spatial report again.")
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
-                                       SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
-            elif button_upload is not None:  # User wishes to upload a json file
+                                       url_list=url_list, spatial_var=spatial_var,
+                                       SpatialFeatureChoice=SpatialFeatureChoice)
+            elif button_url_upload is not None:  # User wishes to upload a json file
                 file = request.files['file']
                 if file.filename == '':  # File was not selected
                     flash('No selected file to upload.')
@@ -406,15 +407,18 @@ def home():
                     file.save(upload_path_var)
                     # Step 2: Read the file into a variable
                     returned_data = read_from_excel(upload_path_var)
-                    # Step 3: Write the variable into the json file used by the system 'CP3_deployments.json'
-                    write_to_JSON_file(returned_data, url_vars_file_path)
-                    # Step 4: Re-populate the variables
-                    returned_combined_list = vars_from_json_file(url_vars_file_path)
-                    org_list = returned_combined_list[1]
-                    entityname_list = returned_combined_list[2]
-                    url_list = returned_combined_list[3]
-                    json_file_ok = returned_combined_list[0][0]
-                    flash('New list uploaded!')
+                    if 'org' in returned_data[0].keys():  # The right kind of file was uploaded
+                        # Step 3: Write the variable into the json file used by the system 'CP3_deployments.json'
+                        write_to_JSON_file(returned_data, url_vars_file_path)
+                        # Step 4: Re-populate the variables
+                        returned_combined_list = vars_from_json_file(url_vars_file_path)
+                        org_list = returned_combined_list[1]
+                        entityname_list = returned_combined_list[2]
+                        url_list = returned_combined_list[3]
+                        json_file_ok = returned_combined_list[0][0]
+                        flash('New list uploaded!')
+                    else:  # The user attempted to upload the wrong file
+                        flash('Caution! It appears that you have uploaded an incorrect file. Process abandoned.')
                 else:  # The only remaining option is that the wrong file extension was chosen.
                     flash("Wrong extension type for upload. Must be '.xlsx'")
 
@@ -422,32 +426,76 @@ def home():
                 control_growth_of_xlsx(f'.{UPLOAD_FOLDER}/*.xlsx')
 
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                       url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
-                                       SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
+                                       url_list=url_list, spatial_var=spatial_var,
+                                       SpatialFeatureChoice=SpatialFeatureChoice)
 
-            elif button_download is not None:  # User wishes to download the MSExcel file with all the sites
-                upload_file = True
+            elif button__url_download is not None:  # User wishes to download the MSExcel file with all the sites
                 # Check the growth of files in the folder and reduce it
                 control_growth_of_xlsx(f'.{DOWNLOAD_FOLDER}/*.xlsx')
                 # Step 1: Read file at 'url_vars_file_path'
                 json_var_from_file = read_json_file(url_vars_file_path)
                 # Step 2: Convert to Excel
-                excel_file_path = write_to_xls(json_var_from_file)
+                excel_file_path = write_to_xls(json_var_from_file, 'url')
                 # Step 3: Download to browser
-                flash('Template dowloaded.')
+                flash('Template downloaded.')
+                return send_file(excel_file_path, as_attachment=True)
+
+            elif button_api_upload is not None:  # User wishes to upload new API credentials
+                file = request.files['file']
+                if file.filename == '':  # File was not selected
+                    flash('No selected file to upload.')
+                elif file and allowed_file(file.filename):  # File extension checked and is ok ('.xlsx')
+                    # Step 1: Upload the .xlsx file and save it under the upload folder
+                    filename = secure_filename(file.filename)
+                    upload_path_var = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(upload_path_var)
+                    # Step 2: Read the file into a variable
+                    returned_data = read_from_excel(upload_path_var)
+                    if 'username' in returned_data[0].keys():  # The right kind of file was uploaded
+                        # Step 3: Write the variable into the json file used by the system 'CP3_deployments.json'
+                        write_to_JSON_file(returned_data, API_vars_file_path)
+                        # Step 4: Re-populate the variables
+                        # Get API creds from the variables json file
+                        API_file_name = "API_Profile.json"
+                        API_vars_file_path = f"./Variables/{API_file_name}"
+                        API_vars = API_vars_json_file(API_vars_file_path)
+                        username = API_vars[0]
+                        password = API_vars[1]
+                        grant_type = API_vars[2]
+                        flash('New API credentials uploaded!')
+                    else:
+                        flash('Caution! It appears that you have uploaded an incorrect file. Process abandoned.')
+                else:  # The only remaining option is that the wrong file extension was chosen.
+                    flash("Wrong extension type for upload. Must be '.xlsx'")
+
+                # Check the growth of files in the folder and reduce it
+                control_growth_of_xlsx(f'.{UPLOAD_FOLDER}/*.xlsx')
+
+                return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
+                                       url_list=url_list, spatial_var=spatial_var,
+                                       SpatialFeatureChoice=SpatialFeatureChoice)
+
+            elif button__api_download is not None:  # User wishes to donwload the existing API credentials
+                control_growth_of_xlsx(f'.{DOWNLOAD_FOLDER}/*.xlsx')
+                # Step 1: Read file at 'url_vars_file_path'
+                json_var_from_file = read_json_file(API_vars_file_path)
+                # Step 2: Convert to Excel
+                excel_file_path = write_to_xls(json_var_from_file, 'api')
+                # Step 3: Download to browser
+                flash('API Credentials downloaded.')
                 return send_file(excel_file_path, as_attachment=True)
 
         else:  # Get not Post, in other words when it lands
             return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                                   url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
-                                   SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
+                                   url_list=url_list, spatial_var=spatial_var,
+                                   SpatialFeatureChoice=SpatialFeatureChoice)
 
     else:  # json_file_ok == False
         if request.method == 'GET':
             flash(returned_combined_list[0][1])
         return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
-                               url_list=url_list, spatial_var=spatial_var, upload_file=upload_file,
-                               SpatialFeatureChoice=SpatialFeatureChoice, excel_file_path=excel_file_path)
+                               url_list=url_list, spatial_var=spatial_var,
+                               SpatialFeatureChoice=SpatialFeatureChoice)
 
 
 #  **********************************************************************************
@@ -473,7 +521,7 @@ def cp3report():
 
     if url_key != None and feature_key != None:
         url_key = url_key.lower()
-        feature_key = feature_key.lower()
+        # feature_key = feature_key.lower()
 
         if url_key == 'johannesburg':
             url_key = 'joburg'
@@ -546,7 +594,8 @@ def cp3report():
 
             # Get the proper layer name from the dictionary
             for key, content in layer_dict.items():
-                if feature_key in content.lower():
+                # if feature_key in content.lower():
+                if feature_key == content:
                     SpatialFeatureChoice = content
 
             del df_MapServiceLayerCatalogue['ForIntersection']

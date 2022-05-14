@@ -3,7 +3,7 @@
   <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -11,6 +11,8 @@
     <title>CP3 Spatial Report</title>
   </head>
   <body>
+
+
 
 
 <div class="container"> <!-- Container 1 for Main "h1" Heading -->
@@ -116,16 +118,24 @@
         </div> <!-- col4 1  -->
       </div> <!-- End Row 5  -->
 
-      <div class="row justify-content-center"> <!-- Row 6 Start -->
-        <div class="col-4 p-3 border bg-light"> <!-- Col 4 1 Start -->
-          <div class="border bg-light border-danger rounded d-grid col-12 mx-auto">
-              <button id="c2" name="Download_Sites" value="Download_Sites" type="submit" class="btn btn-dark m-3">Download sites template</button> <!-- Download JSON file -->
-              <button class="btn btn-dark mx-3" name="Upload_Sites" value="Upload_Sites" type="submit" id="c1">Upload revised sites template</button>
-              <input type="file" name="file" class="form-control mx-3 mb-3 w-auto" id="file" aria-describedby="c1" aria-label="Upload">
-              <!-- <button id="c1" name="Upload_Sites" value="Upload_Sites" type="submit" class="btn btn-dark m-3">Upload sites</button>  -->
-          </div>
-        </div> <!-- col4 1  -->
-      </div> <!-- End Row 6  -->
+      <ul style="position:fixed;top:0px;left:0px" class="nav justify-content-center align-items-left">
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            Maintenance
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button id="d2" name="Download_Credentials" value="Download_Credentials" type="submit" class="dropdown-item">Dowload existing API credentials</button></li>
+            <li><button id="d1" name="Upload_Credentials" value="Upload_Credentials" type="submit" class="dropdown-item">Upload revised API credentials</button></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button id="c2" name="Download_Sites" value="Download_Sites" type="submit" class="dropdown-item">Download template of existing available urls listed here -></button></li>
+            <li><button id="c1" name="Upload_Sites" value="Upload_Sites" type="submit" class="dropdown-item" >Upload updated template - updates should appear here -></button></li>
+            <li><hr class="dropdown-divider"></li>
+            <input type="file" name="file" class="form-control mx-3 mb-3 w-auto" id="file" aria-describedby="c1" aria-label="Upload">
+          </ul>
+        </div>
+      </ul>
+
+
 
     </form> <!-- End form -->
 
