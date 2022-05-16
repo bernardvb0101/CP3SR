@@ -512,13 +512,17 @@ def cp3report():
     global layer_list, number_of_plots, entity_choice, url_message
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
     global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2
-    global url_choice, SpatialFeatureChoice
+    global url_choice, SpatialFeatureChoice, master_dict
 
-
+    master_dict = {}
+    SpatialFeatureChoice = ''
+    # Get the url_key parameter
     url_key = request.args.get('url_key')
+    # Get the feature_key parameter
     feature_key = request.args.get('feature_key')
+    feature_key = feature_key.replace('%20', ' ').strip()  # Maybe R is passing the %20's - who knows.
 
-
+    # If both of the keys are not None
     if url_key != None and feature_key != None:
         url_key = url_key.lower()
         # feature_key = feature_key.lower()
@@ -592,11 +596,28 @@ def cp3report():
             layer_dict = return_list[1]
             layer_list = return_list[2]
 
+            """
             # Get the proper layer name from the dictionary
             for key, content in layer_dict.items():
                 # if feature_key in content.lower():
                 if feature_key == content:
+                    print(feature_key)
                     SpatialFeatureChoice = content
+            """
+            # Compare the feature_key parameter with the spatial feature callable options
+            # and assign 'SpatialFeatureChoice' variable if the key passed is valid
+            # This should work because the space are stripped out
+            SpatialFeatureChoice = ''
+            feature_key_wordlist = feature_key.split(sep=" ", maxsplit=20)
+            # Get the proper layer name from the dictionary
+            for content in layer_dict.values():
+                valid_parameter = 0
+                for word in feature_key_wordlist:
+                    if word.lower() in content.lower():
+                        valid_parameter += 1
+                    if valid_parameter == len(content.split(sep=" ", maxsplit=20)):
+                        SpatialFeatureChoice = content
+                        break
 
             del df_MapServiceLayerCatalogue['ForIntersection']
             del df_MapServiceLayerCatalogue['Grouping']
@@ -607,13 +628,18 @@ def cp3report():
                 spatial_var.append(layer_list)
 
             # If all the API's were called successfully
-            if all_well != 5:
-                url_message = "The call for data from the {org_choice} system was not successful. This may be because the" \
-                              "API profile for {org_choice} relating to the username and password that you used, may not " \
-                              "be correctly set up or one or more of the data catalogues returned an 'empty' response. " \
-                              "Try using a different site and query to see if the problem persists or whether it is " \
-                              "specific to this site and your user profile replated to this site."
-                return url_message
+            if all_well != 5 or SpatialFeatureChoice == '':
+                if all_well != 5:
+                    url_message = f"The call for data from the {org_choice} system was not successful. This may be because the" \
+                                  f"API profile for {org_choice} relating to the username and password that you used, may not " \
+                                  f"be correctly set up or one or more of the data catalogues returned an 'empty' response. " \
+                                  f"Try using a different site and query to see if the problem persists or whether it is " \
+                                  f"specific to this site and your user profile replated to this site."
+                if SpatialFeatureChoice == '':
+                    url_message = f"The specified 'feature_key' parameter you have given was {feature_key}. There is " \
+                                  f"no match for that key and a report could not be generated."
+                master_dict["message"] = url_message
+                return json.dumps(master_dict["message"], indent=4)
             else:
                 url_message = f"Successfull API call on {org_choice} CP3 system.\n2nd API call initiated on" \
                               f" {SpatialFeatureChoice}"
@@ -786,9 +812,10 @@ def cp3report():
                     return send_file(path, as_attachment=True)
                 else:
                     url_message = "There are no spatial intersects"
-                    return url_message
+                    master_dict["message"] = url_message
+                    return json.dumps(master_dict["message"], indent=4)
     else: # url_key or featue_key is empty
-        valid_site = True
+        # If the url_key and feature_key vars are empty, get the site and layer parameters
         site = request.args.get('site')
         layer = request.args.get('layer')
 
@@ -850,7 +877,6 @@ def cp3report():
                         if site == 'tswane':
                             site = 'tshwane'
                         if site.lower() in master_dict.keys():
-                            valid_site = True
                             if layer == None:  # No layer was asked to you can return the url_key
                                 return json.dumps(master_dict[site.lower()], indent=4)
                             else:  # A layer was asked
@@ -877,7 +903,6 @@ def cp3report():
                                     master_dict["message"] = "Layer query for a specific site must be 'list'."
                                     return json.dumps(master_dict["message"], indent=4)
                         else:  # A valid site could not be found
-                            valid_site = False
                             master_dict["message"] = "No match for your specified site was found. The CP3 site may " \
                                                      "exist but if you get this message this particular site has not " \
                                                      "yet been included for API Spatial Reports."
