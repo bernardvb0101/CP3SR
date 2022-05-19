@@ -200,18 +200,19 @@ def cp3report():
             # If all the API's were called successfully
             if all_well != 5 or SpatialFeatureChoice == '':
                 if all_well != 5:
-                    url_message = f"The call for data from the {org_choice} system was not successful. This may be because the" \
-                                  f"API profile for {org_choice} relating to the username and password that you used, may not " \
-                                  f"be correctly set up or one or more of the data catalogues returned an 'empty' response. " \
-                                  f"Try using a different site and query to see if the problem persists or whether it is " \
-                                  f"specific to this site and your user profile replated to this site."
+                    url_message = f"The call for data from the {org_choice} system was not successful. This may be " \
+                                  f"because the API profile for {org_choice} relating to the username and password" \
+                                  f" that you used, may not be correctly set up or one or more of the data catalog" \
+                                  f"ues returned an 'empty' response. Try using a different site and query to see " \
+                                  f"if the problem persists or whether it is specific to this site and your user p" \
+                                  f"rofile related to this site."
                 if SpatialFeatureChoice == '':
                     url_message = f"The specified 'feature_key' parameter you have given was {feature_key}. There is " \
                                   f"no match for that key and a report could not be generated."
                 master_dict["message"] = url_message
                 return json.dumps(master_dict["message"], indent=4)
             else:
-                url_message = f"Successfull API call on {org_choice} CP3 system.\n2nd API call initiated on" \
+                url_message = f"Successful API call on {org_choice} CP3 system.\n2nd API call initiated on" \
                               f" {SpatialFeatureChoice}"
 
                 df_MapServiceIntersections = pd.DataFrame(
@@ -592,15 +593,15 @@ def home():
 
                 # If all the API's were called successfully, show the DropDown
                 if all_well == 5:
-                    flash(f"Successfull API call on {org_choice} CP3 system.\n"
+                    flash(f"Successful API call on {org_choice} CP3 system.\n"
                           f"Select spatial feature and initiate 2nd API call.")
                     nav_stage = 2
                 else:
                     flash(f"The call for data from the {org_choice} system was not successful. This may be because the"
                           f" API profile for {org_choice} relating to the username and password that you used, may not"
-                          f"be correctly set up or one or more of the data catalogues returned an 'empty' response."
+                          f" be correctly set up or one or more of the data catalogues returned an 'empty' response."
                           f" Try using a different site and query to see if the problem persists or whether it is "
-                          f"specific to this site and your user profile replated to this site.")
+                          f"specific to this site and your user profile related to this site.")
                 # If nav_stage is 2, the user would be able to call the 2nd APIs, otherwise he will just get a fault
                 # message and stay on the page with the url choices and username and password
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
@@ -627,7 +628,7 @@ def home():
                     if df_MapServiceIntersections.empty:
                         flash("Something went wrong with the MapServiceIntersectionsCatalogue API call.")
                     else:
-                        flash(f"Successfull API call on the {SpatialFeatureChoice} from the {org_choice} CP3 system.\n"
+                        flash(f"Successful API call on the {SpatialFeatureChoice} from the {org_choice} CP3 system.\n"
                               f"You may now download a spatial feature report (MS Word) on {SpatialFeatureChoice}.")
                         nav_stage = 3
                 else:
@@ -905,6 +906,7 @@ def home():
                 return send_file(excel_file_path, as_attachment=True)
 
         else:  # Get not Post, in other words when it lands
+            flash("Add '/cp3report' to the url in your browser for direct API call options.")
             return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
                                    url_list=url_list, spatial_var=spatial_var,
                                    SpatialFeatureChoice=SpatialFeatureChoice)
