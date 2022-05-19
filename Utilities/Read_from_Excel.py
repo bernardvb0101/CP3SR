@@ -10,8 +10,8 @@ def read_from_excel(file_name):
         try:
             raw_data = pandas.read_excel(file_name)
             data = raw_data.fillna('').to_dict('records') #.fillna gets rid of the "nan" in the mepty fields
-
-            return fix_data(data)
+            data = fix_data(data)
+            return data
         except ValueError:
             print("-------------------------------------------------------------------------------------------")
             print("File is not a recognized excel file. The ligitimate Excel file must have a .xlxs extension.")

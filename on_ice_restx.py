@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import json
 import os
+from flask_restx import Api, Resource, fields
+from io import BytesIO
 from werkzeug.utils import secure_filename
 from Utilities.file_exists import allowed_file
 from Utilities.url_exists import URL_exists
@@ -45,21 +47,40 @@ nav_stage = 1
 all_well = 0
 SpatialFeatureChoice = ""
 
+db = {}
 if json_file_ok:
     org_choice = org_list[0]  # Make the 1st one in the list the default
     url_choice = url_list[0]  # Make the 1st one in the list the default
     entity_choice = entityname_list[0]  # Make the 1st one in the list the default
+    for item in range(len(org_list)):
+        db[org_list[item].lower()] = url_list[item].lower()
+    # print(db)
 else:
     org_choice = []
     url_choice = []
     entity_choice = []
 
 spatial_var = []
-# sys_username = "Bernard"
-# This part of the credentials for the API call (to my understanding) is default allways "password"
+
 
 
 app = Flask(__name__)  # to make the app run without any
+
+api = Api(
+    app, version="0.1.0", title="CP3 Spatial Report API", description="A friendly CP3 API tool for spatial reports. "
+                                                                      "A configuration interface is available by "
+                                                                      "adding: '/manage' to the url displayed above"
+                                                                      " in your bowser."
+)
+ns = api.namespace("The available 'url_key' parameters", description="API url_key's")
+CP3_sites = api.model(
+    "Site",
+    {
+        "cp3_url": fields.String(required=True, description="URL of the CP3 site"),
+        "url_key": fields.String(required=True, description="Short name of the municipality"),
+    },
+)
+
 
 #app.config['SECRET_KEY'] = os.urandom(24)
 # Configure a secret key for flask app
@@ -74,6 +95,44 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Set 1 MB file upload limit
 app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024
 
+"""
+db = json.load(open("./Variables/CP3_deployments.json"))
+ns = api.namespace("sites", description="CP3 urls")
+site = api.model(
+    "Site",
+    {
+        "cp3_url": fields.String(required=True, description="URL of the site"),
+        "org": fields.String(required=True, description="Short name of the municipality"),
+        "entity_name": fields.String(required=True, description="Full name of the municipality"),
+    },
+)
+
+site = api.model(
+    "Site",
+    {
+        "url": fields.String(required=True, description="URL of the site"),
+        "name": fields.String(required=True, description="Name of the municipality"),
+    },
+)
+"""
+
+@ns.route("/")
+class SitesList(Resource):
+    @ns.doc("list_url_keys")
+    @ns.marshal_list_with(CP3_sites)
+    def get(self):
+        return [{"url_key": SiteName, "cp3_url": cp3url} for SiteName, cp3url in sorted(db.items())]
+
+
+
+@ns.route("/<string:SiteName>")
+@ns.param("CP3_url", "The CP3 url of the municipality.")
+class OneSite(Resource):
+    @ns.doc("get_CP3_url")
+    @ns.marshal_with(CP3_sites)
+    def get(self, SiteName):
+        return {"url_key": SiteName.lower(), "cp3_url": db.get(SiteName.lower())}
+
 
 #  **********************************************************************************
 @app.route('/cp3report', methods=['GET'])
@@ -86,7 +145,7 @@ def cp3report():
     """
     global all_well, url_list, spatial_var, username, password, grant_type, org_choice
     global API_call_dict, layer_dict, SpecificFeature, spatial_var, entityname_list
-    global layer_list, number_of_plots, entity_choice, url_message, profile_name, profile_pw
+    global layer_list, number_of_plots, entity_choice, url_message
     global baseline_cat_dict, df_ProjectCatalogue, df_CapexBudgetDemandCatalogue, df_MapServiceLayerCatalogue
     global df_MapServiceIntersections, no_intersects, total_datapoints, intersecting, df_Intersects2
     global url_choice, SpatialFeatureChoice, master_dict
@@ -97,19 +156,12 @@ def cp3report():
     url_key = request.args.get('url_key')
     # Get the feature_key parameter
     feature_key = request.args.get('feature_key')
-    profile_name = request.args.get('profile_name')
-    profile_pw = request.args.get('profile_pw')
+    feature_key = feature_key.replace('%20', ' ').strip()  # Maybe R is passing the %20's - who knows.
 
-    if profile_name == None or profile_pw == None:  # Username and/or password was not provided
-        # If nothing was given, use the defaults
-        profile_name = username
-        profile_pw = password
-
-
-    # If both of the keys are not None, it means a spatial report is called. Unless invalid params were used
+    # If both of the keys are not None
     if url_key != None and feature_key != None:
         url_key = url_key.lower()
-        feature_key = feature_key.replace('%20', ' ').strip()  # Maybe R is passing the %20's - who knows.
+        # feature_key = feature_key.lower()
 
         if url_key == 'johannesburg':
             url_key = 'joburg'
@@ -146,27 +198,27 @@ def cp3report():
             keep_track += 1
 
         # Call the Help API to create variables
-        API_call_dict = create_vars(profile_name, profile_pw, grant_type, url_choice)
+        API_call_dict = create_vars(username, password,grant_type, url_choice)
         if not API_call_dict:  # If the dictionary is returned empty, tell the user
             url_message = "Something went wrong with the API calls. This may be a wrong username/password OR the " \
                           "API credentials are not set up correctly/at all."
         else:  # Returned values from API variables call seems ok so process can continue
             all_well += 1
             # Call the Baseline Catalogue and get info about the baseline
-            baseline_cat_dict = baseline_catalogue(profile_name, profile_pw, grant_type, url_choice, API_call_dict)
+            baseline_cat_dict = baseline_catalogue(username, password, grant_type, url_choice, API_call_dict)
             if not baseline_cat_dict:
                 url_message = "Something went wrong with the BaselineCatalogue API call."
             else:
                 all_well += 1
             # Call the ProjectCatalogue and create a dataframe
-            df_ProjectCatalogue = pd.DataFrame(ProjectCatalogue(profile_name, profile_pw, grant_type, url_choice,
+            df_ProjectCatalogue = pd.DataFrame(ProjectCatalogue(username,password, grant_type, url_choice,
                                                                 API_call_dict))
             if df_ProjectCatalogue.empty:
                 url_message = "Something went wrong with the ProjectCatalogue API call."
             else:
                 all_well += 1
             # Call the CapexDemandCatalogue and create a dataframe
-            df_CapexBudgetDemandCatalogue = pd.DataFrame(CapexDemandCatalogue(profile_name, profile_pw, grant_type,
+            df_CapexBudgetDemandCatalogue = pd.DataFrame(CapexDemandCatalogue(username, password, grant_type,
                                                                               url_choice, API_call_dict,
                                                                               baseline_cat_dict['APIAccessTag']))
             if df_CapexBudgetDemandCatalogue.empty:
@@ -174,7 +226,7 @@ def cp3report():
             else:
                 all_well += 1
             # Call the MapServiceLayersCatalogue
-            return_list = MapServiceLayersCatalogue(profile_name, profile_pw, grant_type, url_choice, API_call_dict)
+            return_list = MapServiceLayersCatalogue(username, password, grant_type, url_choice, API_call_dict)
 
             df_MapServiceLayerCatalogue = pd.DataFrame(return_list[0])
             layer_dict = return_list[1]
@@ -185,9 +237,24 @@ def cp3report():
             for content in layer_dict.values():
                 # if feature_key in content.lower():
                 if feature_key == content:
-                    # print(feature_key)
                     SpatialFeatureChoice = content
 
+            """
+            # Compare the feature_key parameter with the spatial feature callable options
+            # and assign 'SpatialFeatureChoice' variable if the key passed is valid
+            # This should work because the space are stripped out
+
+            feature_key_wordlist = feature_key.split(sep=" ", maxsplit=20)
+            # Get the proper layer name from the dictionary
+            for content in layer_dict.values():
+                valid_parameter = 0
+                for word in feature_key_wordlist:
+                    if word.lower() in content.lower():
+                        valid_parameter += 1
+                    if valid_parameter == len(content.split(sep=" ", maxsplit=20)):
+                        SpatialFeatureChoice = content
+
+            """
             del df_MapServiceLayerCatalogue['ForIntersection']
             del df_MapServiceLayerCatalogue['Grouping']
             if df_MapServiceLayerCatalogue.empty:
@@ -214,7 +281,7 @@ def cp3report():
                               f" {SpatialFeatureChoice}"
 
                 df_MapServiceIntersections = pd.DataFrame(
-                            MapServiceIntersectionCatalogue(profile_name, profile_pw, grant_type,
+                            MapServiceIntersectionCatalogue(username, password, grant_type,
                                                             url_choice, API_call_dict, layer_dict,
                                                             SpatialFeatureChoice))
 
@@ -409,28 +476,19 @@ def cp3report():
                     return json.dumps(master_dict["message"], indent=4)  # Tell the user went wrong.
             except KeyError:  # There was no problem the process can go ahead
                 if site == 'help':
-                    master_dict["message"] = "<b>CP3 Spatial Report API Parameter Options:<br>Note: Passing the " \
-                                             "'profile_name' and 'profile_pw' parameters are optional.<br>If " \
-                                             "no 'profile_name' and 'profile_pw' parameters are provided, the defaul" \
-                                             "ts that can be " \
-                                             "managed on the app management screen (https://connect.cp3.co.za/docx_s" \
-                                             "patial_report) under the 'Maintenance' menu will be used.<br><br>" \
-                                             "1. To find out what the 'url_key' parameter is for the '/cp3report' " \
-                                             "API use the following parameter:<br>'https://connect.cp3.co.za/docx_sp" \
-                                             "atial_report/cp3report?site=all'<br>or<br>'https://connect.cp3.co.za/d" \
-                                             "ocx_spatial_report/cp3report?site=name' (where name is for example 'ts" \
-                                             "hwane').<br><br>2. To find out what the spatial layer options are use " \
-                                             "the 'site' AND 'layer' parameters:<br>Full example 1:<br>'https://conne" \
-                                             "ct.cp3.co.za/docx_spatial_report/cp3report?site=tshwane&layer=list'" \
-                                             "<br>Full example 2:<br>'https://connect.cp3.co.za/docx_spatial_report/" \
-                                             "cp3report?site=all'<br>Full example 3:<br>'https://connect.cp3.co.za/d" \
-                                             "ocx_spatial_report/cp3report?profile_name=....&profile_pw=.....&site=a" \
-                                             "ll'<br><br>3. To download a spatial report:<br>Full example 1:" \
-                                             "<br>'https://connect.cp3.co.za/docx_spatial_report/cp3report?url_key=" \
-                                             "midvaal&feature_key=Midvaal 5 EDCs'<br>Full example 2:<br>'https://co" \
-                                             "nnect.cp3.co.za/docx_spatial_report/cp3report?url_key=midvaal&feature" \
-                                             "_key=Midvaal 5 EDCs&profile_name=....&profile_pw=....'"
-
+                    master_dict["message"] = "CP3 Spatial Report API Parameter Options:" \
+                                             "1. To find out what the 'url_key' parameter is for the '/cp3report' API " \
+                                             "use the following parameter:" \
+                                             "    '?site=all' or '?site=name' (where name is for example 'tshwane').  " \
+                                             "2. To find out what the spatial layer options are use the 'site' AND " \
+                                             "'layer' parameters:" \
+                                             "Full example 1: 'https://connect.cp3.co.za/docx_spatial_report/cp3report" \
+                                             "?site=tshwane&" \
+                                             "layer=list'    Full example 2: 'https://connect.cp3.co.za/docx_spatial_" \
+                                             "report/" \
+                                             "cp3report?url_key=midvaal&feature_key=Midvaal 5 EDCs'     Full example " \
+                                             "3:" \
+                                             "''https://connect.cp3.co.za/docx_spatial_report/cp3report?site=all'"
                     json_object = json.dumps(master_dict["message"], indent=4)
                     return json_object
                 elif (site != 'help' and site != None) or (site == 'all'):  # A site's parameter was requested
@@ -460,14 +518,14 @@ def cp3report():
                             else:  # A layer was asked
                                 if layer == 'list':
                                     url_choice = f"https://www.{site}.cp3.co.za/"
-                                    API_call_dict = create_vars(profile_name, profile_pw, grant_type, url_choice)
+                                    API_call_dict = create_vars(username, password, grant_type, url_choice)
                                     if not API_call_dict:  # If the dictionary is returned empty, tell the user
                                         master_dict[
                                             "message"] = "Something went wrong with the APi call to the CP3 site."
                                         return json.dumps(master_dict["message"], indent=4)
                                     else:  # API calling to CP3 right works
                                         # Call the MapServiceLayersCatalogue
-                                        return_list = MapServiceLayersCatalogue(profile_name, profile_pw, grant_type,
+                                        return_list = MapServiceLayersCatalogue(username, password, grant_type,
                                                                                 url_choice,
                                                                                 API_call_dict)
                                         layer_list = return_list[2]
@@ -487,13 +545,12 @@ def cp3report():
                             return json.dumps(master_dict["message"], indent=4)
         else:  # Site returned None
             master_dict = {}
-            master_dict["message"] = "Use:<br>'https://connect.cp3.co.za/docx_spatial_report/cp3report?site=help'<br>" \
-                                     "to get guidance."
+            master_dict["message"] = "Use '?site=help' for instructions."
             return json.dumps(master_dict["message"], indent=4)
 
 
 # This route is the "home" route that redirects immediately to "home_in.html"
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/manage', methods=['GET', 'POST'])
 def home():
     """
     This function allows the user to select from a list of CP3 sites and then from a list of spatial layers from
@@ -596,7 +653,7 @@ def home():
                     nav_stage = 2
                 else:
                     flash(f"The call for data from the {org_choice} system was not successful. This may be because the"
-                          f" API profile for {org_choice} relating to the username and password that you used, may not"
+                          f"API profile for {org_choice} relating to the username and password that you used, may not"
                           f"be correctly set up or one or more of the data catalogues returned an 'empty' response."
                           f" Try using a different site and query to see if the problem persists or whether it is "
                           f"specific to this site and your user profile replated to this site.")
