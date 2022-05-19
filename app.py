@@ -4,6 +4,7 @@ import numpy as np
 import json
 import os
 from werkzeug.utils import secure_filename
+from waitress import serve
 from Utilities.file_exists import allowed_file
 from Utilities.url_exists import URL_exists
 from Utilities.control_growth import control_growth_of_docx, control_growth_of_xlsx
@@ -608,6 +609,7 @@ def home():
 
             elif button_1stAPI is not None and (nav_stage == 2 or nav_stage ==3):  # Pressed the button to select a another site
                 nav_stage = 1
+                SpatialFeatureChoice = ""
                 flash("Select another site.")
                 return render_template('home.html', nav_stage=nav_stage, url_choice=url_choice,
                                        url_list=url_list, spatial_var=spatial_var,
@@ -917,5 +919,5 @@ def home():
 
 # This is required for the programme to run
 if __name__ == '__main__':  # This runs the app and starts the server that allows it to receive connections
-    app.run(host="localhost", port=8080, debug=True)
-    #serve(app, host='0.0.0.0', port=5000)
+    # app.run(host="localhost", port=8080, debug=True)
+    serve(app, host='0.0.0.0', port=8080)
