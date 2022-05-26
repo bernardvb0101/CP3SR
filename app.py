@@ -210,7 +210,11 @@ def cp3report():
                     url_message = f"The specified 'feature_key' parameter you have given was {feature_key}. There is " \
                                   f"no match for that key and a report could not be generated."
                 master_dict["message"] = url_message
-                return json.dumps(master_dict["message"], indent=4)
+                # return json.dumps(master_dict["message"], indent=4), 400
+                response = app.response_class(response=json.dumps(master_dict["message"], indent=4),
+                                              status=400,
+                                              mimetype='application/json')
+                return response
             else:
                 url_message = f"Successful API call on {org_choice} CP3 system.\n2nd API call initiated on" \
                               f" {SpatialFeatureChoice}"
@@ -227,7 +231,11 @@ def cp3report():
                                   f" {SpatialFeatureChoice}. Unable to retrieve the Map Service Layer Catalogue " \
                                   f"results for the API due to an exception."
                     master_dict["message"] = url_message
-                    return json.dumps(master_dict["message"], indent=4)
+                    # return json.dumps(master_dict["message"], indent=4)
+                    response = app.response_class(response=json.dumps(master_dict["message"], indent=4),
+                                                  status=400,
+                                                  mimetype='application/json')
+                    return response
                 else:  # Continue
                     # All APIs have now been called so the report building can proceed
                     # Change the FeatureClassName column to "category" type
@@ -393,7 +401,11 @@ def cp3report():
                     else:
                         url_message = "There are no spatial intersects"
                         master_dict["message"] = url_message
-                        return json.dumps(master_dict["message"], indent=4)
+                        #return json.dumps(master_dict["message"], indent=4)
+                        response = app.response_class(response=json.dumps(master_dict["message"], indent=4),
+                                                      status=400,
+                                                      mimetype='application/json')
+                        return response
     else: # url_key or featue_key is empty
         # If the url_key and feature_key vars are empty, get the site and layer parameters
         site = request.args.get('site')
@@ -417,36 +429,48 @@ def cp3report():
 
             try:
                 if master_dict["message"]:  # This just triggers a KeyError if this entry does not exist.
-                    return json.dumps(master_dict["message"], indent=4)  # Tell the user went wrong.
+                    #return json.dumps(master_dict["message"], indent=4)  # Tell the user went wrong.
+                    response = app.response_class(response=json.dumps(master_dict["message"], indent=4),
+                                                  status=400,
+                                                  mimetype='application/json')
+                    return response
             except KeyError:  # There was no problem the process can go ahead
                 if site == 'help':
-                    master_dict["message"] = "<b>CP3 Spatial Report API Parameter Options:<br>Note: Passing the " \
-                                             "'profile_name' and 'profile_pw' parameters are optional.<br>If " \
+                    master_dict["message"] = "CP3 Spatial Report API Parameter Options:  Note: Passing the " \
+                                             "'profile_name' and 'profile_pw' parameters are optional.  If " \
                                              "no 'profile_name' and 'profile_pw' parameters are provided, the defaul" \
                                              "ts that can be " \
                                              "managed on the app management screen (https://connect.cp3.co.za/docx_s" \
-                                             "patial_report) under the 'Maintenance' menu will be used.<br><br>" \
+                                             "patial_report) under the 'Maintenance' menu will be used.    " \
                                              "1. To find out what the 'url_key' parameter is for the '/cp3report' " \
-                                             "API use the following parameter:<br>'https://connect.cp3.co.za/docx_sp" \
-                                             "atial_report/cp3report?site=all'<br>or<br>'https://connect.cp3.co.za/d" \
+                                             "API use the following parameter:  'https://connect.cp3.co.za/docx_sp" \
+                                             "atial_report/cp3report?site=all'  or  'https://connect.cp3.co.za/d" \
                                              "ocx_spatial_report/cp3report?site=name' (where name is for example 'ts" \
-                                             "hwane').<br><br>2. To find out what the spatial layer options are use " \
-                                             "the 'site' AND 'layer' parameters:<br>Full example 1:<br>'https://conne" \
+                                             "hwane').    2. To find out what the spatial layer options are use " \
+                                             "the 'site' AND 'layer' parameters:  Full example 1:  'https://conne" \
                                              "ct.cp3.co.za/docx_spatial_report/cp3report?site=tshwane&layer=list'" \
-                                             "<br>Full example 2:<br>'https://connect.cp3.co.za/docx_spatial_report/" \
-                                             "cp3report?site=all'<br>Full example 3:<br>'https://connect.cp3.co.za/d" \
+                                             "  Full example 2:  'https://connect.cp3.co.za/docx_spatial_report/" \
+                                             "cp3report?site=all'  Full example 3:  'https://connect.cp3.co.za/d" \
                                              "ocx_spatial_report/cp3report?profile_name=....&profile_pw=.....&site=a" \
-                                             "ll'<br><br>3. To download a spatial report:<br>Full example 1:" \
-                                             "<br>'https://connect.cp3.co.za/docx_spatial_report/cp3report?url_key=" \
-                                             "midvaal&feature_key=Midvaal 5 EDCs'<br>Full example 2:<br>'https://co" \
+                                             "ll'    3. To download a spatial report:  Full example 1:" \
+                                             "  'https://connect.cp3.co.za/docx_spatial_report/cp3report?url_key=" \
+                                             "midvaal&feature_key=Midvaal 5 EDCs'  Full example 2:  'https://co" \
                                              "nnect.cp3.co.za/docx_spatial_report/cp3report?url_key=midvaal&feature" \
                                              "_key=Midvaal 5 EDCs&profile_name=....&profile_pw=....'"
 
-                    json_object = json.dumps(master_dict["message"], indent=4)
-                    return json_object
+                    #json_object = json.dumps(master_dict["message"], indent=4)
+                    #return json_object
+                    response = app.response_class(response=json.dumps(master_dict["message"], indent=4),
+                                                  status=200,
+                                                  mimetype='application/json')
+                    return response
                 elif (site != 'help' and site != None) or (site == 'all'):  # A site's parameter was requested
                     if site == 'all':  # User wants a list of all available url_key's
-                        return json.dumps(master_dict, indent=4)
+                        # return json.dumps(master_dict, indent=4)
+                        response = app.response_class(response=json.dumps(master_dict, indent=4),
+                                                      status=200,
+                                                      mimetype='application/json')
+                        return response
                     else:  # user entered a specific site
                         # Try and fix some common input errors
                         if site == 'joburg':
@@ -466,8 +490,12 @@ def cp3report():
                         if site == 'tswane':
                             site = 'tshwane'
                         if site.lower() in master_dict.keys():
-                            if layer == None:  # No layer was asked to you can return the url_key
-                                return json.dumps(master_dict[site.lower()], indent=4)
+                            if layer == None:  # No layer was asked so you can return the url_key
+                                #return json.dumps(master_dict[site.lower()], indent=4)
+                                response = app.response_class(response=json.dumps(master_dict[site.lower()], indent=4),
+                                                              status=200,
+                                                              mimetype='application/json')
+                                return response
                             else:  # A layer was asked
                                 if layer == 'list':
                                     url_choice = f"https://www.{site}.cp3.co.za/"
@@ -475,7 +503,12 @@ def cp3report():
                                     if not API_call_dict:  # If the dictionary is returned empty, tell the user
                                         master_dict[
                                             "message"] = "Something went wrong with the APi call to the CP3 site."
-                                        return json.dumps(master_dict["message"], indent=4)
+                                        #return json.dumps(master_dict["message"], indent=4)
+                                        response = app.response_class(
+                                            response=json.dumps(master_dict["message"], indent=4),
+                                            status=400,
+                                            mimetype='application/json')
+                                        return response
                                     else:  # API calling to CP3 right works
                                         # Call the MapServiceLayersCatalogue
                                         return_list = MapServiceLayersCatalogue(profile_name, profile_pw, grant_type,
@@ -487,20 +520,37 @@ def cp3report():
                                         for item in layer_list:
                                             return_dict[f"'feature_key' parameter option {temp_count}"] = item
                                             temp_count += 1
-                                        return json.dumps(return_dict, indent=4)
+                                        #return json.dumps(return_dict, indent=4)
+                                        response = app.response_class(
+                                            response=json.dumps(return_dict, indent=4),
+                                            status=200,
+                                            mimetype='application/json')
+                                        return response
                                 else:
                                     master_dict["message"] = "Layer query for a specific site must be 'list'."
-                                    return json.dumps(master_dict["message"], indent=4)
+                                    #return json.dumps(master_dict["message"], indent=4)
+                                    response = app.response_class(response=json.dumps(master_dict["message"], indent=4),
+                                                                  status=400,
+                                                                  mimetype='application/json')
+                                    return response
                         else:  # A valid site could not be found
                             master_dict["message"] = "No match for your specified site was found. The CP3 site may " \
                                                      "exist but if you get this message this particular site has not " \
                                                      "yet been included for API Spatial Reports."
-                            return json.dumps(master_dict["message"], indent=4)
+                            #return json.dumps(master_dict["message"], indent=4)
+                            response = app.response_class(response=json.dumps(master_dict["message"], indent=4),
+                                                          status=400,
+                                                          mimetype='application/json')
+                            return response
         else:  # Site returned None
             master_dict = {}
-            master_dict["message"] = "Use:<br>'https://connect.cp3.co.za/docx_spatial_report/cp3report?site=help'<br>" \
+            master_dict["message"] = "Use:  'https://connect.cp3.co.za/docx_spatial_report/cp3report?site=help'  " \
                                      "to get guidance."
-            return json.dumps(master_dict["message"], indent=4)
+            # return json.dumps(master_dict["message"], indent=4)
+            response = app.response_class(response=json.dumps(master_dict["message"], indent=4),
+                                          status=200,
+                                          mimetype='application/json')
+            return response
 
 
 # This route is the "home" route that redirects immediately to "home_in.html"
