@@ -224,7 +224,8 @@ def cp3report():
 
                 if df_MapServiceIntersections.empty:
                     url_message = f"Something went wrong with the MapServiceIntersectionsCatalogue API call using" \
-                                  f" {SpatialFeatureChoice}."
+                                  f" {SpatialFeatureChoice}. Unable to retrieve the Map Service Layer Catalogue " \
+                                  f"results for the API due to an exception."
                     master_dict["message"] = url_message
                     return json.dumps(master_dict["message"], indent=4)
                 else:  # Continue
@@ -639,7 +640,8 @@ def home():
 
                     if df_MapServiceIntersections.empty:
                         flash(f"Something went wrong with the MapServiceIntersectionsCatalogue API call using"
-                              f" {SpatialFeatureChoice}.")
+                              f" {SpatialFeatureChoice}. Unable to retrieve the Map Service Layer Catalogue results"
+                              f" for the API due to an exception.")
                     else:
                         flash(f"Successful API call on the {SpatialFeatureChoice} from the {org_choice} CP3 system.\n"
                               f"You may now download a spatial feature report (MS Word) on {SpatialFeatureChoice}.")
