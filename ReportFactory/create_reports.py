@@ -571,7 +571,7 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
             cells = table.add_row().cells
             cells[0].text = f"Number of projects in all {SpatialFeatureChoice_Text} - Overview"
             cells[1].text = f"Total in all {SpatialFeatureChoice_Text}:\n{sum_projects} projects"
-            cells[2].text = f"Average per {SpatialFeatureChoice_Text}:\n{'{0:.3g}'.format(average_projects)} projects"
+            cells[2].text = f"Average per {SpatialFeatureChoice_Text_Single}:\n{'{0:.3g}'.format(average_projects)} projects"
             cells[
                 3].text = f"75th percentile of projects across all {SpatialFeatureChoice_Text}:" \
                           f"\n{seventy_fifth_projects} projects"
@@ -612,7 +612,7 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
             cells = table.add_row().cells
             cells[0].text = f"Capital demand in all {SpatialFeatureChoice_Text} - Overview"
             cells[1].text = f"Total capital demand in all {SpatialFeatureChoice_Text}:\n{sum_cost}"
-            cells[2].text = f"The average capital demand per {SpatialFeatureChoice_Text}:\n{average_cost}"
+            cells[2].text = f"The average capital demand per {SpatialFeatureChoice_Text_Single}:\n{average_cost}"
             cells[
                 3].text = f"The 75th percentile of capital demand for {SpatialFeatureChoice_Text}:" \
                           f"\n{seventy_fifth_cost}"
