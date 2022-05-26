@@ -397,7 +397,7 @@ def cp3report():
                                               df_MapServiceIntersections=df_MapServiceIntersections,
                                               df_CapexBudgetDemandCatalogue=df_CapexBudgetDemandCatalogue,
                                               df_ProjectCatalogue=df_ProjectCatalogue)
-                        return send_file(path, as_attachment=True)
+                        return send_file(path, as_attachment=True), 200
                     else:
                         url_message = "There are no spatial intersects"
                         master_dict["message"] = url_message
