@@ -420,7 +420,7 @@ def create_worddoc(var_dict, baseline_dict, df_intersects2, df_EntireSet, df_per
                                   f" was on ",
                            "4 i": f"{datenow}",
                            "5 n": f" when this report was requested. Any subsequent updates to the data contained the"
-                                  f" CP3 System related to the applicable baseline from which this reports was drawn, "
+                                  f" CP3 System related to the applicable baseline from which this report was drawn, "
                                   f"would therefore not reflect in this report. \n\nFor the ",
                            "6 i": f"{entity_choice}",
                            "7 i": f", the following spatial features are available for the purpose of developing ",
